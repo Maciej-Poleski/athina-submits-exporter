@@ -1,0 +1,47 @@
+<html><body><pre style="word-wrap: break-word; white-space: pre-wrap;">#include &lt;cmath&gt;
+#include &lt;iostream&gt;
+#include &lt;iomanip&gt;
+using namespace std;
+
+double x,y,c_;
+
+inline double f(double w)
+{
+	return ((1.0/sqrt((y*y)-(w*w)))+(1.0/sqrt((x*x)-(w*w))))-1/c_;
+}
+
+inline double min(double l,double p)
+{
+	if(l&lt;p)
+		return l;
+	return p;
+}
+
+int main()
+{
+	ios_base::sync_with_stdio(0);
+	unsigned int z;
+	cin&gt;&gt;z;
+	while(z--)
+		{
+		double a,b,c,d, pr=0.00001;
+		cin&gt;&gt;x&gt;&gt;y&gt;&gt;c_;
+		a=x;b=y;
+		c=min(a,b)/2;
+		a-=0.00001;b-=0.00001;
+		do
+		{
+			//cout&lt;&lt;"a = "&lt;&lt;a&lt;&lt;" b = "&lt;&lt;b&lt;&lt;" r��nica: "&lt;&lt;abs(b-a)&lt;&lt;" c = ";
+			//cout&lt;&lt;c&lt;&lt;" f(a) = "&lt;&lt;f(a)&lt;&lt;" f(c) = "&lt;&lt;f(c)&lt;&lt;endl;
+			if (f(a)*f(c)&lt;0)
+				b = c;
+			else
+				a = c;
+			//cout&lt;&lt;"a = "&lt;&lt;a&lt;&lt;" b = "&lt;&lt;b&lt;&lt;endl;
+			c = (a+b)/2;
+		} while (abs(b-a) &gt; pr);
+		cout&lt;&lt;fixed&lt;&lt;setprecision(3)&lt;&lt;c&lt;&lt;'\n';
+	}
+	return 0;
+}
+</pre></body></html>

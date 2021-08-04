@@ -1,0 +1,40 @@
+<html><body><pre style="word-wrap: break-word; white-space: pre-wrap;">#include &lt;cstdio&gt;
+#include &lt;algorithm&gt;
+
+using namespace std;
+
+void man(const char * const T,const char * const W,int const N,int * const R)
+{
+    for(int j,k=0,i=0;k&lt;=2*N;k+=j,i=max(i-j,-(k%2)))
+    {
+	while((k-i)/2&gt;0 &amp;&amp; (k+i)/2&lt;N &amp;&amp; (T[(k-i)/2-1]==W[(k+i)/2]) &amp;&amp; (W[(k-i)/2-1]==T[(k+i)/2]))
+	    i+=2;
+	R[k]=i;
+	for(j=1;j&lt;i &amp;&amp; j+R[k-j]&lt;i;++j)
+	    R[k+j]=R[k-j];
+    }
+}
+
+int main()
+{
+    int z;
+    scanf("%d",&amp;z);
+    while(z--)
+    {
+	int n;
+	scanf("%d\n",&amp;n);
+	char T[n+5];
+	scanf("%s\n",T);
+	int R[2*n+5];
+	char W[2*n+5];
+	scanf("%s\n",W);
+	man(T,W,n,R);
+	int M=0;
+	for(int i=0;i&lt;2*n+1;++i)
+	    M=max(M,R[i]);
+	printf("%d\n",M);
+    }
+    return 0;
+}
+
+</pre></body></html>

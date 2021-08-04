@@ -1,0 +1,40 @@
+<html><body><pre style="word-wrap: break-word; white-space: pre-wrap;">#include &lt;cstdio&gt;
+#include &lt;cmath&gt;
+using namespace std;
+
+double x,y,c;
+
+inline double f(double w)
+{
+	return 1/sqrt(x*x-w*w)+1/sqrt(y*y-w*w)-1/c;
+}
+
+inline double min(double l,double p)
+{
+	if(l&lt;p)
+		return l;
+	return p;
+}
+
+int main()
+{
+	unsigned int z;
+	scanf("%u",&amp;z);
+	while(z--)
+	{
+		scanf("%la%la%la",&amp;x,&amp;y,&amp;c);
+		double tmp=min(x,y)/2;
+		float st=tmp/2;
+		while(f(tmp) &amp;&amp; st)
+		{
+			if(f(tmp)&lt;0)
+				tmp+=st;
+			else
+				tmp-=st;
+			st/=2;
+		}
+		printf("%.3f\n",tmp);
+	}
+	return 0;
+}
+</pre></body></html>

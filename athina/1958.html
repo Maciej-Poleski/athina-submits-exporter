@@ -1,0 +1,231 @@
+<html><body><pre style="word-wrap: break-word; white-space: pre-wrap;">#include &lt;cstdio&gt;
+#include &lt;cstdlib&gt;
+#include &lt;ctime&gt;
+
+template&lt;class T&gt;
+class list
+{
+    public:
+        struct key
+        {
+            T obj;
+            key *next;
+        
+            key() : next(0), obj() {}
+            key(T &amp;t) : next(0), obj(t) {}
+            
+        };
+        class iterator
+        {
+            key *wsk;
+            
+            public:
+            
+            iterator() : wsk(0) {}
+            iterator(key *w) : wsk(w) {}
+            
+            operator bool()
+            {
+                return wsk;
+            }
+            
+            iterator &amp;operator++()
+            {
+                wsk=wsk-&gt;next;
+                return *this;
+            }
+            
+            T&amp; operator*()
+            {
+                return wsk-&gt;obj;
+            }
+        };
+        
+    private:
+        
+        key *beg;
+        key *e;
+        
+    public:
+        
+        list() : beg(0), e(0) {}
+        ~list()
+        {
+            while(!empty())
+            {
+                key *tmp=beg;
+                beg=beg-&gt;next;
+                delete tmp;
+            }
+            beg=e=0;
+            
+        }
+        
+        void push(T obj)
+        {
+            if(e)
+            {
+                key *tmp=new key(obj);
+                e-&gt;next=tmp;
+                e=tmp;
+            }
+            else
+            {
+                beg=e=new key(obj);
+            }
+        }
+        
+        bool empty()
+        {
+            return beg==0;
+        }
+        
+        iterator begin()
+        {
+            return iterator(beg);
+        }
+        
+        iterator end()
+        {
+            return iterator(e);
+        }
+};
+
+template &lt;class T&gt;
+struct node
+{
+    T obj;
+    unsigned int parent;
+    list&lt;unsigned int&gt; child;
+    
+    node() : parent(0),child() {}
+};
+
+struct pair
+{
+    unsigned int wej,wyj;
+    
+    pair() : wej(0), wyj(0) {}
+};
+
+list&lt;unsigned int&gt; *graf;
+node&lt;pair&gt; *drzewo;
+bool *odwiedzone;
+unsigned int x,y;
+unsigned int poziom;
+
+void build_tree(unsigned int miasto)
+{
+    fflush(stdout);
+    odwiedzone[miasto]=true;
+    drzewo[miasto].obj.wej=poziom++;
+    for(list&lt;unsigned int&gt;::iterator it=graf[miasto].begin();it;++it)
+    {
+        if(!odwiedzone[*it])
+        {
+            drzewo[*it].parent=miasto;
+            drzewo[miasto].child.push(*it);
+            build_tree(*it);
+        }
+    }
+    drzewo[miasto].obj.wyj=poziom++;
+    //putchar('\r');
+    return;
+}
+
+bool in(pair w1,pair w2)    // Czy w1 zawiera się w w2
+{
+    if(w1.wej&lt;w2.wej || w1.wyj&gt;w2.wyj)
+        return false;
+    return true;
+}
+
+node&lt;pair&gt; * find_gparent(node&lt;pair&gt; *w1,node&lt;pair&gt; *w2)    // Znajdź przodka w1 i w2
+{
+    node&lt;pair&gt; *wynik=w1;
+    
+    while(!in(w2-&gt;obj,wynik-&gt;obj))
+        wynik=drzewo+wynik-&gt;parent;
+    
+    return wynik;
+}
+
+void print(unsigned int poz)
+{
+    if(poz!=x)
+        print(drzewo[poz].parent);
+    printf("%u ",poz);
+    return;
+}
+
+int main()
+{
+    srand(time(0));
+    unsigned int z;
+    scanf("%u",&amp;z);
+    while(z--)
+    {
+        unsigned int n,q;
+        scanf("%u",&amp;n);
+        graf=new list&lt;unsigned int&gt; [n+1];
+        drzewo=new node&lt;pair&gt; [n+1];
+        odwiedzone=new bool[n+1];
+        for(unsigned int i=0;i&lt;=n;++i)
+            odwiedzone[i]=false;
+        for(unsigned int i=1;i&lt;n;++i)
+        {
+            scanf("%u%u",&amp;x,&amp;y);
+            graf[x].push(y);
+            graf[y].push(x);
+        }
+        
+        /*for(unsigned int i=1;i&lt;=n;++i)
+        {
+            printf("Wierzchołek: %u |",i);
+            for(list&lt;unsigned int&gt;::iterator it=graf[i].begin();it;++it)
+                printf(" %u",*it);
+            putchar('\n');
+        }*/
+        
+        poziom=0;
+        build_tree(rand()%n+1);
+        
+        delete [] graf;
+        
+        /*for(unsigned int i=1;i&lt;=n;++i)
+        {
+            printf("Obieg %u | Zawartość: %u %u | Rodzic: %u | Dzieci: ",i,drzewo[i].obj.wej,drzewo[i].obj.wyj,drzewo[i].parent);
+            for(list&lt;unsigned int&gt;::iterator it=drzewo[i].child.begin();it;++it)
+            {
+                printf(" %u",*it);
+            }
+            putchar('\n');
+            fflush(stdout);
+        }*/
+        
+        scanf("%u",&amp;q);
+        
+        while(q--)
+        {
+            scanf("%u%u",&amp;x,&amp;y);
+            node&lt;pair&gt; *gparent=find_gparent(drzewo+x,drzewo+y);
+            //printf("Znaleziony ojciec to %u\n",gparent-drzewo);
+            while(drzewo+x!=gparent)
+            {
+                printf("%u ",x);
+                x=drzewo[x].parent;
+            }
+            
+            x=gparent-drzewo;
+            
+            print(y);
+            
+            putchar('\n');
+        }
+        
+        delete [] drzewo;
+        delete [] odwiedzone;
+    }
+    return 0;
+}
+</pre></body></html>

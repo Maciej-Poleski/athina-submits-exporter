@@ -1,0 +1,139 @@
+<html><body><pre style="word-wrap: break-word; white-space: pre-wrap;">#include &lt;cstdio&gt;
+#include &lt;algorithm&gt;
+#include &lt;climits&gt;
+#include &lt;cstring&gt;
+
+using namespace std;
+
+const int inf=INT_MAX&gt;&gt;2;
+
+int n,L,C,m;
+
+int T[4001];
+int W[4001];
+int b[4001];
+int e[4001];
+int R[4001];
+int K[4001];
+
+inline int koszt(const int x)	// Koszt pozostawiania t wolnego czasu pod koniec wykładu.
+{
+    if(x==inf)
+	return inf;
+    if(x==0)
+	return 0;
+    if(x&lt;=10)
+	return -C;
+    return (x-10)*(x-10);
+}
+
+inline int czas(int a,int b)	// Łączny czas trwania wykładów &lt;a;b&gt;
+{
+    return T[b]-T[a-1];
+}
+
+int wynik(int wyklad,int temat)
+{
+    if(K[temat]!=-1)
+	return K[temat];
+    if(wyklad==1)
+	return K[temat]=((czas(1,temat)&lt;=L)?koszt(L-czas(1,temat)):inf);
+
+    int wyn=inf;
+    for(int tem=e[wyklad-1];tem&gt;=b[wyklad-1];--tem)
+    {
+	if(czas(tem+1,temat)&lt;=L &amp;&amp; wyn&gt;wynik(wyklad-1,tem)+koszt(L-czas(tem+1,temat)))
+	{
+	    wyn=wynik(wyklad-1,tem)+koszt(L-czas(tem+1,temat));
+	    R[temat]=tem;
+	}
+    }
+    return K[temat]=wyn;
+}
+
+int main()
+{
+    int z;
+    scanf("%d\n",&amp;z);
+    while(z--)
+    {
+	scanf("%d %d %d\n",&amp;n,&amp;L,&amp;C);
+	T[0]=0;
+	memset(K,-1,(n+1)*sizeof(int));
+	for(int i=1;i&lt;=n;++i)
+	{
+	    int x;
+	    scanf("%d ",&amp;x);
+	    T[i]=T[i-1]+x;
+	}
+
+	/* Rozwiązanie zachłanne */
+
+	m=1;
+	b[1]=1;
+	for(int i=1,t=L;i&lt;=n;++i)
+	{
+	    if(t&gt;=czas(i,i))
+		t-=czas(i,i);
+	    else
+	    {
+		e[m]=i-1;
+		b[++m]=i;
+		t=L-czas(i,i);
+	    }
+	}
+
+	/* Koniec rozwiązania zachłannego */
+
+	printf("%d ",m);
+
+	/*for(int i=1;i&lt;=n;++i)
+	    W[i]=(czas(1,i)&lt;=L)?koszt(L-czas(1,i)):inf;
+	for(int i=1;i&lt;=n;++i)
+	    R[i]=0;
+	//R[1]=1;
+
+	for(int wyklad=2;wyklad&lt;=m;++wyklad)
+	{
+	    int A[n+1];
+	    //int R[n+1];
+	    memcpy(A,W,sizeof(int)*(n+1));
+	    for(int temat=1;temat&lt;=n;++temat)
+	    {
+	    	int wyn=inf;
+	    	for(int tem=b[wyklad-1];tem&lt;=e[wyklad-1];++tem)
+	    	{
+		    	if(czas(tem+1,temat)&lt;=L &amp;&amp; wyn&gt;(W[tem]+koszt(L-czas(tem+1,temat))))
+			{
+			    wyn=W[tem]+koszt(L-czas(tem+1,temat));
+			    //printf("%d %d %d\n",wyklad,temat,tem);
+			    R[temat]=tem;
+			}
+		}
+		A[temat]=wyn;
+		//::R[temat]=R[temat];
+	    }
+	    memcpy(W,A,sizeof(int)*(n+1));
+	}*/
+
+	//wynik(m,n);
+
+	printf("%d 1",wynik(m,n));
+
+	{
+	    int out[n+1];
+	    int *ptr=out;
+	    int x=n;
+	    for(int i=1;i&lt;m;++i)
+	    {
+		*ptr++=R[x]+1;
+		x=R[x];
+	    }
+	    for(int i=1;i&lt;m;++i)
+		printf(" %d",*--ptr);
+	}
+	printf("\n");
+    }
+    return 0;
+}
+</pre></body></html>

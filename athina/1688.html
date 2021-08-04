@@ -1,0 +1,241 @@
+<html><body><pre style="word-wrap: break-word; white-space: pre-wrap;">#include &lt;cstdio&gt;
+#include &lt;queue&gt;
+using namespace std;
+
+unsigned int zero=0;
+
+/*template&lt;class T&gt;
+class matrix
+{
+    unsigned int height,width;
+    T *obj;
+
+    public:
+
+    matrix() : obj(0) {}
+
+    void set(unsigned int x,unsigned int y)
+    {
+        height=x;
+        width=y;
+        unsigned int size=x*y;
+        if(obj)
+        delete [] obj;
+        obj=new T[size];
+        //for(unsigned int i=0;i&lt;size;++i)
+          //  obj[i]=0xffffffff;
+    }
+
+    T &amp; operator()(int x,int y)
+    {
+        if(x&lt;0 || y&lt;0 || x&gt;=height || y&gt;=width)
+            return zero;
+        return obj[x*width+y];
+    }
+};
+*/
+/*template&lt;class T&gt;
+class queue
+{
+    class key
+    {
+        public:
+        T obj;
+        key *next,*back;
+
+        key() : next(0),back(0) {}
+    };
+    key *begin,*end;
+    unsigned int s;
+
+    public:
+
+    queue() : begin(0),end(0),s(0) {}
+
+    void push(T obj)
+    {
+        if(end)
+        {
+            key *wsk=new key;
+            wsk-&gt;next=end;
+            end-&gt;back=wsk;
+            wsk-&gt;obj=obj;
+            end=wsk;
+        }
+        else
+        {
+            begin=end=new key;
+            end-&gt;obj=obj;
+            end-&gt;next=end-&gt;back=0;
+
+        }
+        ++s;
+    }
+
+    void pop()
+    {
+        if(begin)
+        {
+            if(begin!=end)
+            {
+                begin=begin-&gt;back;
+                delete begin-&gt;next;
+            }
+            else
+            {
+                delete begin;
+                begin=end=0;
+            }
+            --s;
+        }
+        else
+            printf("Usuwam nieistniej�cy obiekt!\n");
+    }
+    T &amp;front()
+    {
+        return begin-&gt;obj;
+    }
+
+    bool empty()
+    {
+        if(begin)
+        return false;
+        return true;
+    }
+    unsigned int size()
+    {
+        return s;
+    }
+};*/
+
+struct kartez
+{
+    unsigned short x,y;
+    kartez(unsigned short q,unsigned short w) :x(q),y(w) {}
+    kartez() {}
+};
+
+/*template &lt;class T&gt;
+class queue
+{
+    T *obj;
+    T *begin,*end;
+
+    public:
+
+    queue()
+    {
+        obj=new kartez[2000*2000];
+        begin=end=obj;
+    }
+
+    void push(T o)
+    {
+        *(++end)=o;
+    }
+    void pop()
+    {
+        ++begin;
+    }
+    T &amp;front()
+    {
+        return *begin;
+    }
+
+    bool empty()
+    {
+        return begin==end;
+    }
+
+    void clear()
+    {
+        begin=end=obj;
+    }
+
+    unsigned int size()
+    {
+        return end-begin;
+    }
+};*/
+
+unsigned short macierz[2000][2000];
+queue&lt;kartez&gt; kolejka;
+unsigned int n,m;
+
+void bfs(unsigned int l=0)
+{
+    while(!kolejka.empty())
+    {
+        unsigned int size=kolejka.size();
+        //printf("Rozmiar kolejki: %u\n",size);
+        for(unsigned int i=0;i&lt;size;++i)
+        {
+            unsigned short &amp;x=kolejka.front().x;
+            unsigned short &amp;y=kolejka.front().y;
+
+            if(x&gt;0)
+            if(macierz[x-1][y]&gt;(l+1))
+            {
+                macierz[x-1][y]=l+1;
+                kolejka.push(kartez(x-1,y));
+            }
+            if(x&lt;n-1)
+            if(macierz[x+1][y]&gt;(l+1))
+            {
+                macierz[x+1][y]=l+1;
+                kolejka.push(kartez(x+1,y));
+            }
+            if(y&lt;m-1)
+            if(macierz[x][y+1]&gt;(l+1))
+            {
+                macierz[x][y+1]=l+1;
+                kolejka.push(kartez(x,y+1));
+            }
+            if(y&gt;0)
+            if(macierz[x][y-1]&gt;(l+1))
+            {
+                macierz[x][y-1]=l+1;
+                kolejka.push(kartez(x,y-1));
+            }
+
+            //printf("%u\n",macierz(x,y));
+
+            kolejka.pop();
+        }
+        ++l;
+    }
+}
+
+
+int main()
+{
+    unsigned int z;
+    scanf("%u",&amp;z);
+    while(z--)
+    {
+    scanf("%u%u",&amp;n,&amp;m);
+    for(unsigned int i=0;i&lt;n;++i)
+    {
+        getchar();
+        for(unsigned int j=0;j&lt;m;++j)
+        {
+            macierz[i][j]=getchar()-'1';
+            if(macierz[i][j]==0)
+                kolejka.push(kartez(i,j));
+        }
+    }
+    bfs();
+
+    for(unsigned int i=0;i&lt;n;++i)
+    {
+        for(unsigned int j=0;j&lt;m;++j)
+        {
+            printf("%u ",macierz[i][j]);
+        }
+        putchar('\n');
+    }
+    //kolejka.clear();
+    }
+    return 0;
+}
+</pre></body></html>

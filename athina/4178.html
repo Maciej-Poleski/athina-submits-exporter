@@ -1,0 +1,463 @@
+<html><body><pre style="word-wrap: break-word; white-space: pre-wrap;">#define only_algorithm                        // PROTOTYP
+#ifdef force_only_algorithm
+#define only_algorithm
+#define use_stl_for_list
+#endif
+#ifdef only_algorithm
+#define use_list_for_slist
+#endif
+
+#include &lt;cstdio&gt;
+#include &lt;cstring&gt;
+#include &lt;stdint.h&gt;
+
+#define make_command(x) x(#x)
+
+#ifndef use_list_for_slist
+template&lt;class T&gt;
+class slist
+{
+    choke me
+};
+#else
+#define slist list
+#endif
+
+#ifndef use_stl_for_list
+template&lt;class T&gt;
+class list
+{
+    #define prev wsk[M]
+    #define next wsk[(1+M)&amp;1]
+    #define beg ptr[M]
+    #define en ptr[(1+M)&amp;1]
+    
+    struct key
+    {
+        T           obj;
+        key         *wsk[2];
+
+        key(const T &amp;oo) : obj(oo) {}
+    };
+    int             M;
+    key             *ptr[2];
+
+    public:
+
+        struct iterator
+        {
+            key     *ptr;
+            int     *M;
+
+            public:
+
+                iterator(key *pp,int *MM) : ptr(pp),M(MM) {}
+
+                iterator &amp; operator=(const iterator &amp;o)
+                {
+                    ptr=o.ptr;
+                    M=o.M;
+                }
+
+                T &amp; operator*()
+                {
+                    return ptr-&gt;obj;
+                }
+
+                iterator &amp; operator++()
+                {
+                    ptr=ptr-&gt;wsk[(1+(*M))&amp;1];
+                    return *this;
+                }
+
+                T * operator-&gt;()
+                {
+                    return &amp;(ptr-&gt;obj);
+                }
+
+                bool operator!=(const iterator &amp;o) const
+                {
+                    return ptr!=o.ptr;
+                }
+
+                bool operator==(const iterator &amp;o) const
+                {
+                    return ptr==o.ptr;
+                }
+        };
+
+        list() : M(0)
+        {
+            beg=en=0;
+        }
+
+
+        explicit list(size_t n,const T&amp; value = T()) : M(0)
+        {
+            beg=en=0;
+            while(n--)
+                push_back(value);
+        }
+
+        ~list()
+        {
+            clear();
+        }
+
+        void set()
+        {
+            M=0;
+            beg=en=0;
+        }
+
+        T &amp; front()
+        {
+            return beg-&gt;obj;
+        }
+
+        T &amp; back()
+        {
+            return en-&gt;obj;
+        }
+
+        iterator begin()
+        {
+            return iterator(beg,&amp;M);
+        }
+
+        iterator end()
+        {
+            return iterator(en,&amp;M);
+        }
+
+        void clear()
+        {
+            while(beg)
+                pop_back();
+
+            beg=en=0;
+            M=0;
+        }
+
+        bool empty()
+        {
+            return beg==0;
+        }
+
+        void push_back(const T co)
+        {
+            if(en==0)
+            {
+                beg=en=new key(co);
+                beg-&gt;prev=en-&gt;next=0;
+            }
+            else
+            {
+                en-&gt;next=new key(co);
+                en-&gt;next-&gt;prev=en;
+                en=en-&gt;next;
+                en-&gt;next=0;
+            }
+        }
+
+        void push_front(const T co)
+        {
+            if(beg==0)
+            {
+                beg=en=new key(co);
+                beg-&gt;prev=en-&gt;next=0;
+            }
+            else
+            {
+                beg-&gt;prev=new key(co);
+                beg-&gt;prev-&gt;next=beg;
+                beg=beg-&gt;prev;
+                beg-&gt;prev=0;
+            }
+        }
+
+        void reverse()
+        {
+            M=(1+M)&amp;1;
+        }
+
+        void splice(iterator position,list&lt;T&gt; &amp;x)
+        {
+            #warning To jest prymitywna wersja funkcji splice w związku z brakiem pełnego rozwiązania strażnika (najlepiej na iteratorach).
+            en-&gt;next=x.beg;
+            en=x.en;
+            x.beg=0;
+            x.en=0;
+            x.M=0;
+        }
+
+        void erase(iterator position)
+        {
+            #warning To jest prymitywna wersja funkcji erase w związku z niepełnym wsparciem dla iteratorów.
+            key     *p=position.ptr;
+            if(p-&gt;prev)
+                p-&gt;prev-&gt;next=p-&gt;next;
+            else
+                beg=p-&gt;next;
+            if(p-&gt;next)
+                p-&gt;next-&gt;prev=p-&gt;prev;
+            else
+                en=p-&gt;prev;
+            delete p;
+        }
+
+        void pop_front()
+        {
+            if(beg==0)
+            {
+                en=0;
+                return;
+            }
+            if(beg==en)
+            {
+                delete beg;
+                beg=en=0;
+            }
+            else
+            {
+                key *old=beg;
+                beg=beg-&gt;next;
+                delete old;
+                //beg-&gt;prev=0;
+            }
+        }
+
+        void pop_back()
+        {
+            if(en==0)
+            {
+                beg=0;
+                return;
+            }
+            if(beg==en)
+            {
+                delete en;
+                beg=en=0;
+            }
+            else
+            {
+                key *old=en;
+                en=en-&gt;prev;
+                delete old;
+                //en-&gt;next=0;
+            }
+        }
+
+        #undef prev
+        #undef next
+        #undef beg
+        #undef en
+};
+#else
+#include &lt;list&gt;
+using namespace std;
+#endif
+
+struct hash
+{
+    union
+    {
+        char        in[8];
+        uint64_t    out;
+    };
+
+    public:
+        hash() {}
+        hash(const char *ptr)
+        {
+            strncpy(in,ptr,8);
+        }
+        hash(const hash &amp; o) : out(o.out) {}
+
+        hash &amp; operator=(const hash &amp; o)
+        {
+            out=o.out;
+            return *this;
+        }
+        hash &amp; operator=(const char *ptr)
+        {
+            strncpy(in,ptr,8);
+            return *this;
+        }
+
+        bool operator==(const hash &amp; o)
+        {
+            return out==o.out;
+        }
+
+        uint64_t getInt()
+        {
+            return out;
+        }
+
+        void print()
+        {
+            int i=0;
+            while(i&lt;8 &amp;&amp; in[i]!=0)
+            {
+                putchar(in[i++]);
+                fflush(stdout);
+            }
+        }
+};
+
+namespace Command
+{
+    hash            make_command(NEW),
+                    make_command(BACK),
+                    make_command(FRONT),
+                    make_command(PRINT),
+                    make_command(REVERSE),
+                    make_command(UNION),
+                    make_command(DELFRONT),
+                    make_command(DELBACK);
+}
+
+struct train
+{
+    hash            name;
+    list&lt;hash&gt;      entry;
+
+    train(const char *nn,const char *obj) : name(nn),entry(1,obj) {}
+    train(const char *nn,hash &amp;obj) : name(nn),entry(1,obj) {}
+    train() {}
+
+    void dump()
+    {
+        putchar('\"');
+        name.print();
+        printf("\":\n");
+        for(list&lt;hash&gt;::iterator i=entry.begin(),e=entry.end();i!=e;++i)
+        {
+            i-&gt;print();
+            printf("&lt;-");
+        }
+        entry.back().print();
+        putchar('\n');
+    }
+};
+
+slist&lt;train&gt;        set;
+
+inline slist&lt;train&gt;::iterator find(const char *n)
+{
+    hash            name(n);
+    for(slist&lt;train&gt;::iterator i=set.begin(),e=set.end();i!=e;++i)
+    {
+        if(i-&gt;name==name)
+            return i;
+    }
+    return set.end();
+}
+
+int main()
+{
+    int             z;
+    int             n;
+    char            in[9];
+    scanf("%d\n",&amp;z);
+    while(z--)
+    {
+        scanf("%d\n",&amp;n);
+        hash        arg1();
+        hash        arg2();
+        char        tmp[9];
+
+        set.clear();
+
+        for(int i=0;i&lt;n;++i)
+        {
+            scanf("%s ",in);
+            hash    command(in);
+            using namespace Command;
+
+            if(command==NEW)
+            {
+                scanf("%s %s\n",in,tmp);
+                train   t;
+                set.push_back(t);
+                set.back().name=in;
+                set.back().entry.set();
+                set.back().entry.push_back(tmp);
+                //puts("NEW");
+            }
+            else if(command==BACK)
+            {
+                scanf("%s %s\n",in,tmp);
+                find(in)-&gt;entry.push_back(tmp);
+                //puts("BACK");
+            }
+            else if(command==FRONT)
+            {
+                scanf("%s %s\n",in,tmp);
+                find(in)-&gt;entry.push_front(tmp);
+                //puts("FRONT");
+            }
+            else if(command==PRINT)
+            {
+                scanf("%s\n",in);
+                find(in)-&gt;dump();
+                //puts("PRINT");
+            }
+            else if(command==REVERSE)
+            {
+                scanf("%s\n",in);
+                find(in)-&gt;entry.reverse();
+                //puts("REVERSE");
+            }
+            else if(command==UNION)
+            {
+                scanf("%s %s\n",in,tmp);
+                list&lt;train&gt;::iterator   i=find(in),
+                                        t=find(tmp);
+                i-&gt;entry.splice(i-&gt;entry.end(),t-&gt;entry);
+                set.erase(t);
+                //puts("UNION");
+            }
+            else if(command==DELFRONT)
+            {
+                scanf("%s %s\n",in,tmp);
+                list&lt;train&gt;::iterator   t=find(tmp);
+                train                   nt;
+                set.push_back(nt);
+                set.back().name=in;
+                set.back().entry.set();
+                set.back().entry.push_back(t-&gt;entry.front());
+                
+                t-&gt;entry.pop_front();
+                if(t-&gt;entry.empty())
+                    set.erase(t);
+            }
+            else if(command==DELBACK)
+            {
+                scanf("%s %s\n",in,tmp);
+                list&lt;train&gt;::iterator   t=find(in);
+                train                   nt;
+                set.push_back(nt);
+                set.back().name=tmp;
+                set.back().entry.set();
+                set.back().entry.push_back(t-&gt;entry.back());
+
+                t-&gt;entry.pop_back();
+                if(t-&gt;entry.empty())
+                    set.erase(t);
+            }
+            else
+                throw 123;
+
+            /*puts("DUMP");
+            for(list&lt;train&gt;::iterator i=set.begin(),e=set.end();i!=e;++i)
+            {
+                i-&gt;dump();
+            }
+            puts("\\Dump");*/
+        }
+    }
+    return 0;
+}
+</pre></body></html>

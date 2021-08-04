@@ -1,0 +1,151 @@
+<html><body><pre style="word-wrap: break-word; white-space: pre-wrap;">#include &lt;cstdio&gt;
+#include &lt;stdint.h&gt;
+#include &lt;vector&gt;
+#include &lt;stack&gt;
+using namespace std;
+
+struct edge
+{
+	uint32_t	d;
+	bool		*v;
+	
+	edge(uint32_t dd,bool *vv) : d(dd),v(vv) {}
+};
+
+vector&lt;edge&gt;		*graf;
+bool				*leak;
+vector&lt;uint32_t&gt;	stos;
+bool				*v;
+bool				*v2;
+uint32_t			n;
+uint32_t			suma=0;
+
+void dfs(uint32_t n=1)
+{
+	if(!v[n])
+	{
+		v[n]=true;
+		if((graf[n].size())&amp;1)
+		{
+			++suma;
+			leak=new bool(false);
+			graf[0].push_back(edge(n,leak));
+			graf[n].push_back(edge(0,leak));
+		}
+		for(vector&lt;edge&gt;::iterator i=graf[n].begin(),e=graf[n].end();i!=e;++i)
+		{
+			dfs(i-&gt;d);
+		}
+	}
+}
+
+void dfs2(uint32_t n=0)
+{
+	for(vector&lt;edge&gt;::iterator i=graf[n].begin(),e=graf[n].end();i!=e;++i)
+	{
+		if(!(*(i-&gt;v)))
+		{
+			*(i-&gt;v)=true;
+			stos.push_back(i-&gt;d);
+			dfs2(i-&gt;d);
+			break;
+		}
+	}
+}
+
+int main()
+{
+	uint32_t	z;
+	scanf("%u",&amp;z);
+	while(z--)
+	{
+		uint32_t	m;
+		uint32_t	t;
+		uint32_t	x;
+		uint32_t	y;
+		
+		scanf("%u%u",&amp;n,&amp;m);
+		
+		graf=new vector&lt;edge&gt;[n+1];
+		v=new bool[n+1];
+		v2=new bool[m+1];
+		
+		for(bool *i=v,*e=v+n+1;i!=e;++i)
+			*i=false;
+		t=m;
+		while(m)
+		{
+			scanf("%u%u",&amp;x,&amp;y);
+			graf[x].push_back(edge(y,v2+m));
+			graf[y].push_back(edge(x,v2+m));
+			v2[m]=false;
+			--m;
+		}
+		
+		dfs();
+		delete [] v;
+		
+		//printf("%u\n",suma);
+		stos.push_back(0);
+		
+		if(suma==0)
+		{
+			dfs2(1);
+			delete [] v2;
+			delete [] graf;
+			printf("1\n%u",t+1);
+			t=stos.back();
+			while(stos.size()!=1)
+			{
+				printf(" %u",stos.back());
+				stos.pop_back();
+			}
+			stos.pop_back();
+			printf(" %u\n",t);
+		}
+		else
+		{
+			printf("%u\n",suma&gt;&gt;1);
+			dfs2();
+			delete [] v2;
+			for(vector&lt;edge&gt;::iterator i=graf[0].begin(),e=graf[0].end();i!=e;++i)
+				delete i-&gt;v;
+			delete [] graf;
+			
+			uint32_t i=1;
+			
+			while(i&lt;stos.size())
+			{
+				uint32_t j=i;
+				for(;stos[j]!=0;++j);
+				printf("%u",j-i);
+				for(;i&lt;j;++i)
+					printf(" %u",stos[i]);
+				putchar('\n');
+				++i;
+			}
+			stos.clear();
+		}
+		
+		/*for(vector&lt;edge&gt;::iterator i=graf[0].begin(),e=graf[0].end();i!=e;++i)
+			printf("%u ",i-&gt;d);
+		putchar('\n');
+		
+		while(!stos.empty())
+		{
+			printf("%u ",stos.top());
+			stos.pop();
+		}
+		putchar('\n');*/
+		
+		//for(vector&lt;edge&gt;::iterator i=graf[0].begin(),e=graf[0].end();i!=e;++i)
+		//	delete i-&gt;v;
+		
+		//for(vector&lt;edge&gt; *i=graf,*e=graf+n+1;i!=e;++i)
+			//i-&gt;clear();
+		
+		suma=0;
+	}
+	return 0;
+}
+</pre></body></html>

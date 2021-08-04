@@ -1,0 +1,143 @@
+<html><body><pre style="word-wrap: break-word; white-space: pre-wrap;">#include &lt;cstdio&gt;
+#include &lt;climits&gt;
+#include &lt;vector&gt;
+using namespace std;
+
+#ifdef USE_OBSOLETE_FUNCTIONS
+#ifdef FULL_DEBUG
+#define TOPSORT_DEBUG
+#endif
+#endif
+
+struct edge
+{
+	int				v;
+	int				d;
+
+	edge(int vv,int dd) : v(vv),d(dd) {}
+};
+
+struct node
+{
+	int				minN;
+	int				max0;
+	int				count0;
+	int				countN;
+	int				selectedX;
+	int				selectedN;
+	vector&lt;edge&gt;	next;
+	vector&lt;edge&gt;	back;
+
+	node(): minN(INT_MAX), max0(INT_MIN), count0(0), countN(0) {}
+};
+
+node				*G;
+int					*b;
+int					cb;
+int					n;
+int					m;
+int					q;
+
+#ifdef USE_OBSOLETE_FUNCTIONS
+void topSort(int n)
+{
+	for(vector&lt;int&gt;::iterator i=G[n].next.begin(),e=G[n].next.end();i!=e;++i)
+	{
+		if(G[i-&gt;d].count==1)
+			(G[i-&gt;d].count=0,topSort(i-&gt;d));
+	}
+	*(--topPtr)=n;
+}
+
+#endif
+
+int main()
+{
+	int z;
+	scanf("%d\n",&amp;z);
+	while(z--)
+	{
+		scanf("%d %d",&amp;n,&amp;m);
+		G=new node[n+1];
+		for(int i=0;i&lt;m;++i)
+		{
+			int a,b,r;
+			scanf("%d %d %d\n",&amp;a,&amp;b,&amp;r);
+			G[a].next.push_back(edge(r,b));
+			G[b].back.push_back(edge(r,a));
+		}
+
+		#ifdef USE_OBSOLETE_FUNCTIONS
+
+		topSort(1);
+
+		#ifdef TOPSORT_DEBUG
+		for(int i=0;i&lt;n;++i)
+			printf("%d\n",top[i]);
+		#endif
+		#endif
+
+		G[1].max0=G[n].minN=0;
+		G[1].count0=G[n].countN=1;
+
+		for(int v=1;v&lt;=n;++v)
+		{
+			for(vector&lt;edge&gt;::iterator j=G[v].next.begin(),e=G[v].next.end();j!=e;++j)
+			{
+				G[j-&gt;d].count0=(G[v].count0+G[j-&gt;d].count0)%1000;
+				if(G[j-&gt;d].max0&lt;G[v].max0+j-&gt;v)
+				{
+					G[j-&gt;d].max0=G[v].max0+j-&gt;v;
+					G[j-&gt;d].selectedX=v;
+				}
+			}
+		}
+
+		for(int v=n;v&gt;0;--v)
+		{
+			for(vector&lt;edge&gt;::iterator j=G[v].back.begin(),e=G[v].back.end();j!=e;++j)
+			{
+				G[j-&gt;d].countN=(G[j-&gt;d].countN+G[v].countN)%1000;
+				if(G[j-&gt;d].minN&gt;G[v].minN+j-&gt;v)
+				{
+					G[j-&gt;d].minN=G[v].minN+j-&gt;v;
+					G[j-&gt;d].selectedN=v;
+				}
+			}
+		}
+
+		scanf("%d\n",&amp;q);
+		while(q--)
+		{
+			b=new int[n];
+			cb=0;
+			int x;
+			scanf("%d ",&amp;x);
+			printf("%d\n",(G[x].count0*G[x].countN)%1000);
+			int v=x;
+			while(v!=1)
+			{
+				b[cb++]=v;
+				v=G[v].selectedX;
+			}
+			b[cb++]=1;
+			int p=cb-1;
+			v=x;
+			while(v!=n)
+			{
+				v=G[v].selectedN;
+				b[cb++]=v;
+			}
+			printf("%d",cb);
+			for(int i=p;i&gt;=0;--i)
+				printf(" %d",b[i]);
+			for(int i=p+1;i&lt;cb;++i)
+				printf(" %d",b[i]);
+			delete [] b;
+			printf("\n");
+		}
+		delete [] G;
+	}
+	return 0;
+}
+</pre></body></html>

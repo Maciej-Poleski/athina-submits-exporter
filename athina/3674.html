@@ -1,0 +1,130 @@
+<html><body><pre style="word-wrap: break-word; white-space: pre-wrap;">#include &lt;cstdio&gt;
+#include &lt;vector&gt;
+#include &lt;stdint.h&gt;
+
+using namespace std;
+
+const int		inf=2000000000;
+
+struct edge
+{
+	int			w;
+	uint32_t	d;
+	
+	edge() {}
+	edge(int ww,uint32_t dd) : w(ww),d(dd) {}
+};
+/*
+template&lt;class T&gt;
+T max(T a,T b)
+{
+	if(a&lt;b)
+		return b;
+	return a;
+}*/
+
+vector&lt;edge&gt;	*graf;
+int				*h;
+int				*D;
+uint32_t		a;
+uint32_t		b;
+
+uint32_t		n;
+
+int main()
+{
+	uint32_t	z;
+	scanf("%u",&amp;z);
+	while(z--)
+	{
+		uint32_t	d;
+		uint32_t	m;
+		int			w;
+		scanf("%u%u%u",&amp;n,&amp;a,&amp;b);
+		
+		graf=new vector&lt;edge&gt;[n+1];
+		h=new int[n+1];
+		
+		for(uint32_t i=1;i&lt;=n;++i)
+		{
+			scanf("%d%u",h+i,&amp;m);
+			
+			graf[i].reserve(m);
+			
+			for(uint32_t j=0;j&lt;m;++j)
+			{
+				scanf("%u%d",&amp;d,&amp;w);
+				graf[i].push_back(edge(w,d));
+			}
+		}
+		
+		/*for(uint32_t i=1;i&lt;=n;++i)
+		{
+			printf("wierzchołek: %u wysokość %d sąsiedzi: %u\n",i,h[i],graf[i].size());
+			
+			for(vector&lt;edge&gt;::iterator j=graf[i].begin(),e=graf[i].end();j!=e;++j)
+			{
+				printf("\tCel %u | odległość: %d\n",j-&gt;d,j-&gt;w);
+			}
+		}*/
+		
+		/******************** PREPROCESING *********************/
+		
+		for(uint32_t i=1;i&lt;=n;++i)
+		{
+			for(vector&lt;edge&gt;::iterator j=graf[i].begin(),e=graf[i].end();j!=e;++j)
+			{
+				j-&gt;w+=(h[j-&gt;d]-h[i])/10;
+			}
+		}
+		
+		delete [] h;
+		
+		/*for(uint32_t i=1;i&lt;=n;++i)
+		{
+			printf("wierzchołek: %u sąsiedzi: %u\n",i,graf[i].size());
+			
+			for(vector&lt;edge&gt;::iterator j=graf[i].begin(),e=graf[i].end();j!=e;++j)
+			{
+				printf("\tCel %u | odległość: %d\n",j-&gt;d,j-&gt;w);
+			}
+		}*/
+		
+		D=new int[n+1];
+		
+		for(int *i=D+1,*e=i+n;i!=e;++i)
+			*i=inf;
+			
+		D[a]=0;
+			
+		for(uint32_t i=1;i&lt;=n;++i)
+		{
+			bool relax=false;
+			for(uint32_t j=1;j&lt;=n;++j)
+			{
+				if(D[j]==inf)
+					continue;
+				for(vector&lt;edge&gt;::iterator k=graf[j].begin(),e=graf[j].end();k!=e;++k)
+				{
+					if(D[k-&gt;d]&gt;D[j]+k-&gt;w)
+					{
+						D[k-&gt;d]=D[j]+k-&gt;w;
+						relax=true;
+					}
+				}
+			}
+			if(!relax)
+				break;
+		}
+		
+		if(D[b]==inf)
+			puts("BRAK");
+		else
+			printf("%d\n",max(0,D[b]));
+			
+		delete [] graf;
+		delete [] D;
+	}
+	return 0;
+}
+</pre></body></html>

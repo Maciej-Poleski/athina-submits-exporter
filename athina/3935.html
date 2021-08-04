@@ -1,0 +1,117 @@
+<html><body><pre style="word-wrap: break-word; white-space: pre-wrap;">#include &lt;cstdio&gt;
+#include &lt;utility&gt;
+#include &lt;queue&gt;
+#include &lt;vector&gt;
+#define MP(x,y) make_pair((x),(y))
+
+using namespace std;
+
+typedef pair&lt;int,int&gt; PII;
+
+struct PQ : public priority_queue&lt;PII&gt;
+{
+    PQ()
+    {
+        c.reserve(110000);
+    }
+};
+
+const int   inf=1050000000;
+
+struct edge
+{
+    int     D;
+    int     w;
+    int     T;
+    int     a;
+    int     l;
+    
+    edge(int DD,int ww,int TT,int aa,int ll) : D(DD),w(ww),T(TT),a(aa),l(ll) {}
+};
+
+struct vertex
+{
+    int             r;
+    vector&lt;edge&gt;    L;
+
+    vertex() : r(inf) {}
+};
+
+vertex  *graf;
+int		n;
+int		m;
+
+int main()
+{
+	int		z;
+    int     S,D,w,T,a,l;
+	scanf("%d",&amp;z);
+	while(z--)
+	{
+        scanf("%d%d",&amp;n,&amp;m);
+        graf=new vertex[n+1];
+
+        for(int i=0;i&lt;m;++i)
+        {
+            scanf("%d%d%d%d%d%d",&amp;S,&amp;D,&amp;w,&amp;T,&amp;a,&amp;l);
+            graf[S].L.push_back(edge(D,w,T,a,l));
+        }
+
+        PQ      kolejka;        // Kolejka wierzchołków
+
+        graf[1].r=0;
+        kolejka.push(MP(0,1));
+
+        while(!kolejka.empty())
+        {
+            PII top=kolejka.top();
+            int &amp;n=top.second;
+            int &amp;r=top.first;
+            kolejka.pop();
+
+            if(graf[n].r!=r)                // Informacja w kopcu jest nieauktualna
+                continue;
+//          if(r==inf)                      // Najbliższy wierzchołek jest nieskończenie daleko - relaksacja jest niemożliwa
+//              throw 2;                    // Nigdy nie powinno się wydarzyć
+
+            for(vector&lt;edge&gt;::iterator i=graf[n].L.begin(),e=graf[n].L.end();i!=e;++i)
+            {
+                int x;
+                
+                if(i-&gt;T==0 || ((x=((r+i-&gt;T-i-&gt;a)%i-&gt;T))&lt;i-&gt;l /*&amp;&amp; r&gt;=i-&gt;a*/))
+                {
+                    if(graf[i-&gt;D].r&gt;r+i-&gt;w)
+                    {
+                        graf[i-&gt;D].r=r+i-&gt;w;
+                        kolejka.push(MP(graf[i-&gt;D].r,i-&gt;D));
+                    }
+                }
+                /*else if(r&lt;i-&gt;a)
+                {
+                    if(graf[i-&gt;D].r&gt;i-&gt;a)
+                    {
+                        graf[i-&gt;D].r=i-&gt;a;
+                        kolejka.push(MP(i-&gt;a,i-&gt;D));
+                    }
+                }*/
+                else
+                {
+                    if(graf[i-&gt;D].r&gt;r+i-&gt;w+i-&gt;T-x)
+                    {
+                        graf[i-&gt;D].r=r+i-&gt;w+i-&gt;T-x;
+                        kolejka.push(MP(graf[i-&gt;D].r,i-&gt;D));
+                    }
+                }
+            }
+        }
+
+        if(graf[n].r==inf)
+            puts("NIE");
+        else
+            printf("%d\n",graf[n].r);
+
+        delete [] graf;
+    }
+	return 0;
+}
+</pre></body></html>

@@ -1,0 +1,19 @@
+<html><body><pre style="word-wrap: break-word; white-space: pre-wrap;">#include &lt;cstdio&gt;
+#include &lt;cmath&gt;
+
+int main()
+{
+    int z;
+    scanf("%d",&amp;z);
+    while(z--)
+    {
+	long long n,w,t;
+	scanf("%lld",&amp;n);
+	t=w=sqrt(n);
+	for(long long i=1;i&lt;=t;++i)
+	    w+=2*((n-i*i)/i);
+	printf("%lld\n",w);
+    }
+    return 0;
+}
+</pre></body></html>

@@ -1,0 +1,334 @@
+<html><body><pre style="word-wrap: break-word; white-space: pre-wrap;">#include &lt;cstdio&gt;
+#include &lt;utility&gt;
+#include &lt;algorithm&gt;
+#include &lt;cmath&gt;
+
+#define REP(n,i) for(int i=0;i&lt;n;++i)
+
+using namespace std;
+
+template&lt;class T&gt;
+class Stack
+{
+    T *mem;
+    int s,h;
+    T *ptr;
+    public:
+	Stack(int size) : s(size),h(0)
+	{
+	    mem=ptr=new T[size];
+	}
+
+	T &amp; top()
+	{
+	    if(size()&gt;0)
+		return *(ptr-1);
+	}
+
+	T &amp; pop()
+	{
+	    if(size()&gt;0)
+	    {
+		--h;
+		return *--ptr;
+	    }
+	}
+
+	void push(T o)
+	{
+	    ++h;
+	    *(ptr++)=o;
+	}
+
+	int size()
+	{
+	    return h;
+	}
+
+	bool empty()
+	{
+	    return size()==0;
+	}
+
+	T &amp; operator[](int n)
+	{
+	    return *(ptr-n);
+	}
+
+	~Stack()
+	{
+	    delete [] mem;
+	}
+};
+
+template&lt;class T&gt;
+class Point
+{
+    public:
+	T x,y;
+
+	Point() : x(T()),y(T()) {}
+	Point(const T xx,const T yy) : x(xx),y(yy) {}
+
+	bool operator&lt;(const Point &amp;o) const
+	{
+	    return x&lt;o.x || (x==o.x &amp;&amp; y&lt;o.y);
+	}
+};
+
+template&lt;class T,class R&gt;
+class Vector : public Point&lt;T&gt;
+{
+    public:
+	Vector() : Point&lt;T&gt;() {}
+	Vector(const T xx,const T yy) : Point&lt;T&gt;(xx,yy) {}
+	Vector(const Point&lt;T&gt; &amp;o) : Point&lt;T&gt;(o) {}
+
+	bool operator==(const Vector &amp;o) const
+	{
+	    return this-&gt;x==o.x &amp;&amp; this-&gt;y==o.y;
+	}
+
+	Vector operator-(const Vector &amp;o) const
+	{
+	    return Vector(this-&gt;x-o.x,this-&gt;y-o.y);
+	}
+
+	Vector operator+(const Vector &amp;o) const
+	{
+	    return Vector(this-&gt;x+o.x,this-&gt;y+o.y);
+	}
+
+	R operator*(const Vector &amp;o) const
+	{
+	    return this-&gt;x*static_cast&lt;R&gt;(o.y)-this-&gt;y*static_cast&lt;R&gt;(o.x);
+	}
+
+	R dot(const Vector &amp;o) const		// Iloczyn skalarny
+	{
+	    return this-&gt;x*static_cast&lt;R&gt;(o.x)+this-&gt;y*static_cast&lt;R&gt;(o.y);
+	}
+
+	R len() const
+	{
+	    return sqrt(static_cast&lt;R&gt;(this-&gt;x)*(this-&gt;x)+static_cast&lt;R&gt;(this-&gt;y)*(this-&gt;y));
+	}
+
+	bool isZero() const
+	{
+	    return abs(this-&gt;x)&lt;10e-5 &amp;&amp; abs(this-&gt;y)&lt;10e-5;
+	}
+};
+
+template&lt;class T,class R&gt;
+inline R dist(const Vector&lt;T,R&gt; &amp; c,const Vector&lt;T,R&gt; &amp; a,const Vector&lt;T,R&gt; &amp; b)	// c - punkt, a,b odcinki na prostej
+{
+    Vector&lt;T,R&gt; A(c-a);
+    Vector&lt;T,R&gt; B(b-a);
+    return (A*B)/B.len();
+}
+
+Vector&lt;int,long double&gt; P,VL;	// Wybrany punkt i wektor na wybranej prostej
+Vector&lt;int,long double&gt; Z(0,0);	// Wektor zerowy 'for hacking'
+Vector&lt;int,long double&gt; U(1,0);	// Wektor jednostkowy x 'for hacking'
+
+template&lt;class T,class R&gt;
+class Line
+{
+    public:
+	Vector&lt;T,R&gt; A,B;	// Punkty wyznaczające prostą
+
+	R dist(const Vector&lt;T,R&gt; &amp; c) const
+	{
+	    return ::dist&lt;T,R&gt;(c,A,B);
+	}
+
+	Vector&lt;T,R&gt; V() const
+	{
+	    return B-A;
+	}
+
+	bool operator==(const Line &amp;o) const	// Wystarczy tylko w tym problemie!
+	{
+	    return A==o.A &amp;&amp; B==o.B;
+	}
+
+	bool operator&lt;(const Line &amp; o) const
+	{
+	    if(V()==o.V())
+		return false;
+	    if(V().y==0 &amp;&amp; V().x&gt;0)
+		return true;
+	    if(V().y==0 &amp;&amp; V().x&lt;0)
+		return o.V().y&lt;0;
+	    if(o.V().y==0 &amp;&amp; o.V().x&gt;0)
+		return false;
+	    if(o.V().y==0 &amp;&amp; o.V().x&lt;0)
+		return V().y&gt;0;
+
+	    if((V().y&lt;0) != (o.V().y&lt;0))
+		return V().y&gt;0;
+
+	    if(V()*o.V()&gt;0)
+		return true;
+	    return false;
+	}
+};
+
+Line&lt;int,long double&gt; SL;	// Wybrana prosta
+
+template&lt;class T,class R&gt;
+inline Point&lt;R&gt; lineCrossPoint(const Line&lt;T,R&gt; &amp;p,const Line&lt;T,R&gt; &amp;l)
+{
+    R t=static_cast&lt;R&gt;(p.A.x-p.B.x)*static_cast&lt;R&gt;(l.A.y-l.B.y)-static_cast&lt;R&gt;(p.A.y-p.B.y)*static_cast&lt;R&gt;(l.A.x-l.B.x);
+    R s=static_cast&lt;R&gt;(l.B.x-p.B.x)*static_cast&lt;R&gt;(l.A.y-l.B.y)-static_cast&lt;R&gt;(l.B.y-p.B.y)*static_cast&lt;R&gt;(l.A.x-l.B.x);
+    //R t=p.V()*l.V();
+    //R s=(p.B-l.B)*l.V();
+    R w=s/t;
+    return Point&lt;R&gt;(w*p.A.x+(1-w)*p.B.x,w*p.A.y+(1-w)*p.B.y);
+}
+
+int main()
+{
+    int z;
+    scanf("%d",&amp;z);
+    while(z--)
+    {
+	int n;
+	scanf("%d",&amp;n);
+
+	scanf("%d%d",&amp;P.x,&amp;P.y);
+	Line&lt;int,long double&gt; L[n];
+	REP(n,i) scanf("%d%d%d%d",&amp;L[i].A.x,&amp;L[i].A.y,&amp;L[i].B.x,&amp;L[i].B.y);
+	if(n&lt;3)
+	{
+	    printf("INF\n");
+	    continue;
+	}
+	REP(n,i)
+	{
+	    L[i].A.x-=P.x;
+	    L[i].A.y-=P.y;
+	    L[i].B.x-=P.x;
+	    L[i].B.y-=P.y;
+
+	    if((L[i].A-L[i].B)*(Z-L[i].B)&gt;0)
+		swap(L[i].A,L[i].B);
+	}
+
+	SL=L[0];
+	REP(n,i) if(abs(SL.dist(Z))&gt;abs(L[i].dist(Z))) SL=L[i];	// Najbliższa prosta - SL
+	VL=SL.A-SL.B;
+
+	sort(L,L+n);
+
+	/*printf("Wybrana: %d %d %d %d\n",SL.A.x+P.x,SL.A.y+P.y,SL.B.x+P.x,SL.B.y+P.y);
+
+	REP(n,i)
+	{
+	    printf("%d %d %d %d\n",L[i].A.x+P.x,L[i].A.y+P.y,L[i].B.x+P.x,L[i].B.y+P.y);
+	}*/
+
+	Stack&lt;Line&lt;int,long double&gt; &gt; S(n+5);	// Stos prostych
+
+	int p=0;	// Pozycja początkowej prostej
+
+	while(!(L[p]==SL))
+	    ++p;
+
+	S.push(SL);	// Pierwsza prosta zawsze jest dobra
+	S.push(L[(p+1)%n]);
+
+	for(int i=(p+2)%n;i!=(p+1)%n;++i==n?i=0:false)
+	{
+	    while(S.size()&gt;1)
+	    {
+		//Vector&lt;long double,long double&gt; Q=lineCrossPoint&lt;int,long double&gt;(L[i],S[1]);
+		Vector&lt;long double,long double&gt; R=lineCrossPoint&lt;int,long double&gt;(L[i],S[1]);
+		Vector&lt;long double,long double&gt; Q=lineCrossPoint&lt;int,long double&gt;(S[2],S[1]);
+		/*if((X-Q)*(Vector&lt;long double,long double&gt;(0,0)-Q)&gt;0)
+		{
+		    //printf("Podnoszę ze stosu\n");
+		    S.pop();
+		    continue;
+		}
+		else
+		    break;*/
+		/*if((X-Q)*(R-Q)&gt;0)
+		{*/
+		    if(Q*R&lt;0 || (Q-R).isZero())	// Warunek jest zły !!!!!!!!!!!
+		    {
+		    	Line&lt;int,long double&gt; l=S.pop();
+			//printf("Podnoszę ze stosu %d %d %d %d\n",l.A.x+P.x,l.A.y+P.y,l.B.x+P.x,l.B.y+P.y);
+		    	continue;
+		    }
+		    else
+		    	break;/*
+		}
+		else
+		{
+		    //if(L[i].V().x&lt;0 &amp;&amp; Q*R&gt;0)	// Warunek jest zły !!!!!!!!!!!
+		    //{
+			//printf("Podnoszę ze stosu 2\n");
+			//S.pop();
+			//continue;
+		    //}
+		    //else
+			break;
+		}*/
+	    }
+
+	    S.push(L[i]);	// Teraz jesteśmy gotowi na dodanie tej prostej do stosu
+	}	// Stos jest prawie gotowy
+	{
+	    /*Vector&lt;long double,long double&gt; Q=lineCrossPoint&lt;int,long double&gt;(L[p],S[1]);
+	    Vector&lt;long double,long double&gt; R=lineCrossPoint&lt;int,long double&gt;(L[p],S[2]);
+	    Vector&lt;long double,long double&gt; X=lineCrossPoint&lt;int,long double&gt;(L[1],S[2]);
+	    if((X-Q)*(Vector&lt;long double,long double&gt;(0,0)-Q)&gt;0)
+	    {
+		//printf("Podnoszę ze stosu\n");
+		printf("INF\n");
+		continue;
+	    }
+	    else
+		S.push(L[p]);*/
+	    if(S.size()&lt;3)
+	    {
+		printf("INF\n");
+		continue;
+	    }
+	    Vector&lt;long double,long double&gt; B=lineCrossPoint&lt;int,long double&gt;(S[2],S[3]);
+	    Vector&lt;long double,long double&gt; A=lineCrossPoint&lt;int,long double&gt;(S[2],S[1]);
+	    if(B*A&lt;0)								// ^^^^
+	    {
+		printf("INF\n");
+		continue;
+	    }
+	    //else
+		//S.push(L[p]);
+	}	// Teraz już gotowe */
+
+	/*printf("Stos:\n");
+	for(int i=S.size();i&gt;0;--i)
+	    printf("%d %d %d %d\n",S[i].A.x+P.x,S[i].A.y+P.y,S[i].B.x+P.x,S[i].B.y+P.y);*/
+
+	long double W=0;	// Wynik
+
+	Point&lt;long double&gt; p1,p2=lineCrossPoint&lt;int,long double&gt;(S[S.size()-1],S[1]);
+	// Nie podnoszę prostej ze stosu!!!
+	while(S.size()&gt;1)
+	{
+	    Point&lt;long double&gt; p1=p2;
+	    p2=lineCrossPoint&lt;int,long double&gt;(S[1],S[2]);
+	    W+=(p1.x+p2.x)*(p1.y-p2.y);
+	    S.pop();
+	}
+	//if(W==0)
+	 //   printf("INF\n");
+	//else
+	    printf("%.7Lf\n",W/2);
+    }
+    return 0;
+}
+
+</pre></body></html>

@@ -1,0 +1,78 @@
+<html><body><pre style="word-wrap: break-word; white-space: pre-wrap;">#include &lt;cstdio&gt;
+#include &lt;stdint.h&gt;
+
+bool		P[200][200];
+uint32_t	W[200][200];
+
+uint32_t	n;
+uint32_t	m;
+
+int main()
+{
+	uint32_t	z;
+	scanf("%u",&amp;z);
+	while(z--)
+	{
+		bool 		N=false;
+		uint32_t	a;
+		uint32_t	b;
+		scanf("%u%u",&amp;n,&amp;m);
+		
+		for(uint32_t i=0;i&lt;n;++i)
+			for(uint32_t j=0;j&lt;n;++j)
+			{
+				P[i][j]=false;
+				W[i][j]=0;
+			}
+		
+		for(uint32_t i=0;i&lt;m;++i)
+		{
+			scanf("%u%u",&amp;a,&amp;b);
+			P[a-1][b-1]=true;
+		}
+		
+		for(uint32_t i=0;i&lt;n;++i)
+			P[i][i]=true;
+		
+		for(uint32_t i=0;i&lt;n;++i)							//Domknięcie przechodnie
+			for(uint32_t j=0;j&lt;n;++j)
+				for(uint32_t k=0;k&lt;n;++k)
+					if(P[j][k]==false &amp;&amp; P[j][i]==true &amp;&amp; P[i][k]==true)
+						P[i][k]=true;
+						
+		/*for(uint32_t i=0;i&lt;n;++i)
+		{
+			for(uint32_t j=0;j&lt;n;++j)
+				printf("%u ",P[i][j]);
+			putchar('\n');
+		}*/
+		
+		for(uint32_t i=0;i&lt;n;++i)							//Zliczanie
+			for(uint32_t j=0;j&lt;n;++j)
+				for(uint32_t k=0;k&lt;n;++k)
+					if(P[i][k] &amp;&amp; P[j][k])
+						++W[i][j];
+		
+		/*putchar('\n');
+		for(uint32_t i=0;i&lt;n;++i)
+		{
+			for(uint32_t j=0;j&lt;n;++j)
+				printf("%u ",W[i][j]);
+			putchar('\n');
+		}*/
+		
+		for(uint32_t i=0;i&lt;n;++i)							//Stożki
+			for(uint32_t j=0;j&lt;n;++j)
+				for(uint32_t k=0;k&lt;n;++k)
+					if(i!=j &amp;&amp; j!=k &amp;&amp; i!=k &amp;&amp; P[i][j] &amp;&amp; !P[i][k] &amp;&amp; !P[k][j])
+						if(W[i][k]!=W[i][i])
+							N=true;
+		
+		if(N)
+			puts("TAK");
+		else
+			puts("NIE");
+	}
+	return 0;
+}
+</pre></body></html>

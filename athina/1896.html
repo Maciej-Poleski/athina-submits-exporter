@@ -1,0 +1,166 @@
+<html><body><pre style="word-wrap: break-word; white-space: pre-wrap;">#include &lt;cstdio&gt;
+
+template &lt;class T&gt;
+class queue
+{
+        struct key
+        {
+            key *next;
+            T obj;
+            
+            key() : next(0) {}
+        };
+        
+        key *begin,*end;
+        
+    public:
+        queue() : begin(0),end(0) {}
+        ~queue()
+        {
+            while(!empty())
+            {
+                pop();
+            }
+        }
+        
+        void push(T obj)
+        {
+            if(end)
+            {
+                key *wsk=new key;
+                end-&gt;next=wsk;
+                end=wsk;
+                
+                wsk-&gt;obj=obj;
+            }
+            else
+            {
+                begin=end=new key;
+                end-&gt;obj=obj;
+            }
+        }
+        bool empty()
+        {
+            return (begin==0?true:false);
+        }
+        
+        void pop()
+        {
+            if(begin)
+            {
+                key *tmp=begin;
+                begin=begin-&gt;next;
+                delete tmp;
+            }
+            if(!begin)
+            {
+                //puts("Kolejka oczyszczona");
+                end=begin;
+            }
+        }
+    
+        T front()
+        {
+            return begin-&gt;obj;
+        }
+        
+        void clear()
+        {
+            this-&gt;~queue();
+        }
+};
+
+struct person
+{
+    queue&lt;unsigned int&gt; out;
+    unsigned int in;
+    
+    person() : in(0),out() {}
+    ~person()
+    {
+        out.~queue&lt;unsigned int&gt;();
+    }
+};
+
+int main()
+{/*
+#ifdef queue_test
+    queue&lt;int&gt; kolejka;
+    unsigned int z,q;
+    int tmp;
+    scanf("%u",&amp;z);
+    q=z;
+    while(z--)
+    {
+        scanf("%d",&amp;tmp);
+        kolejka.push(tmp);
+    }
+    while(!kolejka.empty())
+    {
+        printf("%d ",kolejka.front());
+        kolejka.pop();
+    }
+    putchar('\n');
+    z=q;
+    while(z--)
+    {
+        scanf("%d",&amp;tmp);
+        kolejka.push(tmp);
+    }
+    while(!kolejka.empty())
+    {
+        printf("%d ",kolejka.front());
+        kolejka.pop();
+    }
+    putchar('\n');
+#endif*/
+    unsigned int z,n,m,x,y;
+    scanf("%u",&amp;z);
+    while(z--)
+    {
+        scanf("%u%u",&amp;n,&amp;m);
+        person osoby[n+1];
+        for(unsigned int i=0;i&lt;m;++i)
+        {
+            scanf("%u%u",&amp;x,&amp;y);
+            osoby[x].out.push(y);
+            ++osoby[y].in;
+        }
+        queue&lt;unsigned int&gt; kolejka;
+        for(unsigned int i=1;i&lt;=n;++i)
+            if(osoby[i].in==0)
+                kolejka.push(i);
+        /*                      SORTOWANIE TOPOLOGICZNE             */
+        unsigned int wynik[n];
+        unsigned int *wsk=wynik;
+        bool ok=true;
+        while(!kolejka.empty())
+        {
+            *(wsk++)=kolejka.front();
+            person &amp;teraz=osoby[kolejka.front()];
+            while(!teraz.out.empty())
+            {
+                --osoby[teraz.out.front()].in;
+                if(osoby[teraz.out.front()].in==0)
+                    kolejka.push(teraz.out.front());
+                teraz.out.pop();
+            }
+            kolejka.pop();
+        }
+        for(unsigned int i=1;i&lt;=n;++i)
+            if(osoby[i].in)
+                ok=false;
+        if(ok)
+        {
+            puts("OK");
+            for(unsigned int *tmp=wynik;tmp!=wsk;++tmp)
+                printf("%u ",*tmp);
+            putchar('\n');
+        }
+        else
+            puts("CYKL");
+        /*                      SORTOWANIE TOPOLOGICZNE             */
+    }
+    return 0;
+}
+</pre></body></html>

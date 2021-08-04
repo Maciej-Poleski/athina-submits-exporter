@@ -1,0 +1,81 @@
+<html><body><pre style="word-wrap: break-word; white-space: pre-wrap;">#include &lt;cstdio&gt;
+#include &lt;stdint.h&gt;
+#include &lt;cstdlib&gt;
+#include &lt;ctime&gt;
+
+#ifdef stl_sort
+#include &lt;algorithm&gt;
+#endif
+
+template&lt;class T&gt;
+inline void swap(T &amp;a,T &amp;b)
+{
+	T tmp=a;
+	a=b;
+	b=tmp;
+}
+
+int32_t *A;
+
+inline uint32_t quicksort_partition(uint32_t l,uint32_t r)
+{
+	swap(A[l],A[(rand()%(r-l))+l]);
+	int32_t		v=A[l];
+	uint32_t	i=l;
+	uint32_t	j=r+1;
+	do
+	{
+		do
+		{
+			++i;
+		} while(i&lt;=r &amp;&amp; A[i]&lt;v);
+		
+		do
+		{
+			--j;
+		} while(j&gt;=1 &amp;&amp; A[j]&gt;v);
+		
+		if(i&lt;j)
+			swap(A[i],A[j]);
+	} while(i&lt;j);
+	
+	A[l]=A[j];
+	A[j]=v;
+	return j;
+}
+
+inline void quicksort(uint32_t l,uint32_t r)
+{
+	if(l&lt;r)
+	{
+		uint32_t q=quicksort_partition(l,r);
+		quicksort(l,q-1);
+		quicksort(q+1,r);
+	}
+}
+
+int main()
+{
+	uint32_t z;
+	srand(time(0));
+	scanf("%u",&amp;z);
+	while(z--)
+	{
+		uint32_t n;
+		scanf("%u",&amp;n);
+		A=new int32_t[n+1];
+		for(int32_t *wsk=A+1,*end=A+n+1;wsk!=end;++wsk)
+			scanf("%d",wsk);
+		#ifndef stl_sort
+		quicksort(1,n);
+		#else
+		std::sort(A+1,A+n+1);
+		#endif
+		for(int32_t *wsk=A+1,*end=A+n+1;wsk!=end;++wsk)
+			printf("%d ",*wsk);
+		putchar('\n');
+		delete [] A;
+	}
+	return 0;
+}
+</pre></body></html>

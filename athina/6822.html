@@ -1,0 +1,171 @@
+<html><body><pre style="word-wrap: break-word; white-space: pre-wrap;">#define _GLIBCXX_CONCEPT_CHECKS
+#include &lt;cstdio&gt;
+#include &lt;ext/pb_ds/priority_queue.hpp&gt;
+#include &lt;ext/pb_ds/assoc_container.hpp&gt;
+#include &lt;vector&gt;
+#include &lt;stdint.h&gt;
+#include &lt;cstring&gt;
+
+#ifndef debug
+#undef assert
+#define assert(x) x
+#endif
+
+using namespace std;
+using namespace __gnu_pbds;
+
+typedef uint32_t mask;
+
+struct edge
+{
+    uint16_t d;
+    uint16_t v;
+
+    inline edge(uint16_t d,uint16_t v) : d(d), v(v) {}
+};
+
+struct vertex : public vector&lt;edge&gt;
+{
+};
+
+int n,m,k;
+uint32_t V[22][23];
+mask H[]={ 0U, 1U, 1U&lt;&lt;1, 1U&lt;&lt;2, 1U&lt;&lt;3, 1U&lt;&lt;4, 1U&lt;&lt;5, 1U&lt;&lt;6, 1U&lt;&lt;7, 1U&lt;&lt;8, 1U&lt;&lt;9, 1U&lt;&lt;10, 1U&lt;&lt;11, 1U&lt;&lt;12, 1U&lt;&lt;13, 1U&lt;&lt;14, 1U&lt;&lt;15, 1U&lt;&lt;16, 1U&lt;&lt;17, 1U&lt;&lt;18, 1U&lt;&lt;19, 1U&lt;&lt;20, 1U&lt;&lt;21 };
+vertex *G;
+uint32_t *D;
+
+struct Cmp
+{
+    inline bool operator()(uint16_t a,uint16_t b)
+    {
+	return D[a]&gt;D[b];
+    }
+};
+
+struct virtualVertex
+{
+    uint8_t n;
+    mask vis;
+    uint32_t d;
+
+    virtualVertex(uint8_t n,mask vis,uint32_t d) : n(n), vis(vis), d(d) {}
+
+    inline bool operator&lt;(const virtualVertex&amp; o) const
+    {
+	return d&gt;o.d;
+    }
+};
+
+typedef __gnu_pbds::priority_queue&lt;uint16_t,Cmp,thin_heap_tag&gt; priority_queue1;
+typedef __gnu_pbds::priority_queue&lt;virtualVertex,less&lt;virtualVertex&gt;,thin_heap_tag&gt; priority_queue2;
+typedef cc_hash_table&lt;mask,priority_queue2::point_iterator&gt; hash_table;
+
+struct node : public vector&lt;uint8_t&gt;
+{
+    mask req;
+    hash_table vD;	// Zbiór odwiedzonych wierzchołków -&gt; odległość do tego wierzchołka (na kopcu)
+
+    node() : req(0U) {}
+};
+
+node *K;
+
+int main()
+{
+    scanf("%d%d%d",&amp;n,&amp;m,&amp;k);
+    G=new vertex[n+1];
+    for(int i=0;i&lt;m;++i)
+    {
+	uint16_t p,q,l;
+	scanf("%hd%hd%hd",&amp;p,&amp;q,&amp;l);
+	G[p].push_back(edge(q,l));
+	G[q].push_back(edge(p,l));
+    }
+    /** Faza 1 */
+    {
+	D=new uint32_t[n+1];
+	priority_queue1::point_iterator *I=new priority_queue1::point_iterator[n+1];
+	for(uint16_t i=1;i&lt;=k+1;++i)
+	{
+	    memset(D,~(0U),sizeof(uint32_t)*(n+1));
+	    D[i]=0;
+	    priority_queue1 PQ;
+	    for(int j=1;j&lt;=n;++j)
+		I[j]=PQ.push(j);
+	    while(!PQ.empty())
+	    {
+		uint16_t v=PQ.top();
+		PQ.pop();
+		if(v&lt;=k+1)
+		    V[i][v]=D[v];
+		else if(v==n)
+		    V[i][k+2]=D[n];
+		for(vector&lt;edge&gt;::iterator i=G[v].begin(),e=G[v].end();i!=e;++i)	// Relax
+		{
+		    if(D[v]+i-&gt;v&lt;D[i-&gt;d])
+		    {
+			D[i-&gt;d]=D[v]+i-&gt;v;
+			PQ.modify(I[i-&gt;d],i-&gt;d);
+		    }
+		}
+	    }
+	}
+	delete [] D;
+	delete [] I;
+	delete [] G;
+    }
+    /** Faza 2    PREPARE(D):
+      * V[u][v] = najkrótsza droga z u do v w G
+      * zwolnione tak dużo pamięci jak się da
+      */
+    {
+	K=new node[k+3];
+	bool T[22];
+	memset(T,0,22);
+	int g;
+	scanf("%d",&amp;g);
+	for(int i=0;i&lt;g;++i)
+	{
+	    int r,s;
+	    scanf("%d%d",&amp;r,&amp;s);
+	    if((K[s].req|H[r])==K[s].req)
+		continue;
+	    K[s].req|=H[r];
+	    K[r].push_back(s);
+	    T[r]=T[s]=true;
+	}
+	for(int i=2;i&lt;=k+1;++i)
+	    if(T[i])
+	    {
+		K[1].push_back(i);
+		K[i].req|=H[1];
+		K[i].push_back(k+2);
+		K[k+2].req|=H[i];
+	    }
+    }
+    /** Faza 2 */
+    priority_queue2 PQ;
+    K[1].vD[H[1]]=PQ.push(virtualVertex(1U,H[1],0U));
+    while(PQ.top().n!=k+2)
+    {
+	virtualVertex v=PQ.top();
+	PQ.pop();
+	assert(K[v.n].vD.erase(v.vis));
+	for(int i=1;i&lt;=k+2;++i)
+	{
+	    if(v.vis &amp; H[i])
+		continue;
+	    if((K[i].req | v.vis) != v.vis)
+		continue;
+	    hash_table::point_iterator it=K[i].vD.find(v.vis|H[i]);
+	    if(it==K[i].vD.end())
+		K[i].vD[v.vis|H[i]]=PQ.push(virtualVertex(i,v.vis|H[i],v.d+V[v.n][i]));
+	    else if(it-&gt;second-&gt;d&gt;v.d+V[v.n][i])
+		PQ.modify(it-&gt;second,virtualVertex(i,it-&gt;second-&gt;vis,v.d+V[v.n][i]));
+	}
+    }
+    printf("%d\n",PQ.top().d);
+    delete [] K;
+    return 0;
+}
+</pre></body></html>

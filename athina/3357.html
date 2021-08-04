@@ -1,0 +1,147 @@
+<html><body><pre style="word-wrap: break-word; white-space: pre-wrap;">#include &lt;cstdio&gt;
+#include &lt;stdint.h&gt;
+#include &lt;vector&gt;
+#include &lt;stack&gt;
+using namespace std;
+
+struct node
+{
+	uint16_t	x;
+	uint16_t	y;
+
+	node(uint16_t xx,uint16_t yy) : x(xx), y(yy) {}
+};
+
+struct vertex
+{
+
+	uint32_t	kolor;
+	vector&lt;node&gt;	edges;
+	vector&lt;node&gt;	reverse;
+
+	void clear()
+	{
+		kolor=0;
+		edges.clear();
+		reverse.clear();
+	}
+};
+
+vector&lt;node&gt;	used;
+vertex		space[1001][1001];
+stack&lt;node&gt;	stos;
+uint32_t	n;
+uint32_t	k=1;
+
+void dfs(uint16_t x,uint16_t y)
+{
+	vertex &amp;w=space[x][y];
+	if(w.kolor==-1)
+		return;
+	w.kolor=-1;
+	for(vector&lt;node&gt;::iterator i=w.edges.begin(),e=w.edges.end();i!=e;++i)
+	{
+		vertex &amp;t=space[i-&gt;x][i-&gt;y];
+//		if(t.kolor==0)
+//		{
+			dfs(i-&gt;x,i-&gt;y);
+//		}
+//		else if(t.kolor!=-1)
+//			throw "To nie powinno sie wydarzyc";
+	}
+	stos.push(node(x,y));
+}
+
+void koloruj(uint16_t x,uint16_t y)
+{
+	vertex &amp;w=space[x][y];
+	if(w.kolor==-1)
+	{
+		w.kolor=k;
+		for(vector&lt;node&gt;::iterator i=w.reverse.begin(),e=w.reverse.end();i!=e;++i)
+		{
+			vertex &amp;t=space[i-&gt;x][i-&gt;y];
+			//if(t.kolor!=-1 &amp;&amp; t.kolor!=k)
+			//{
+				//printf(" %u %u %u\n",i-&gt;x,i-&gt;y,t.kolor);
+			//}
+			koloruj(i-&gt;x,i-&gt;y);
+		}
+	}
+}
+
+int main()
+{
+	uint32_t	z;
+	scanf("%u",&amp;z);
+	while(z--)
+	{
+		uint32_t	x;
+		uint32_t	y;
+		uint32_t	x2;
+		uint32_t	y2;
+		uint32_t	m;
+		uint32_t	q;
+		scanf("%u",&amp;n);
+		used.reserve(n);
+		while(n--)
+		{
+			scanf("%u%u%u",&amp;x,&amp;y,&amp;m);
+			used.push_back(node(x,y));
+			vertex &amp;w=space[x][y];
+			w.edges.reserve(w.edges.size()+m);
+			w.reverse.reserve(w.reverse.size()+m);
+			while(m--)
+			{
+				scanf("%u%u",&amp;x2,&amp;y2);
+				w.edges.push_back(node(x2,y2));
+				space[x2][y2].reverse.push_back(node(x,y));
+			}
+		}
+
+		for(vector&lt;node&gt;::iterator i=used.begin(),e=used.end();i!=e;++i)
+		{
+			dfs(i-&gt;x,i-&gt;y);
+		}
+
+		/*while(!stos.empty())
+		{
+			printf("%u %u\n",uint32_t(stos.top().x),uint32_t(stos.top().y));
+			stos.pop();
+		}*/
+
+		while(!stos.empty())
+		{
+			node &amp;t=stos.top();
+			if(space[t.x][t.y].kolor==0)
+				throw 2;
+			koloruj(t.x,t.y);
+			++k;
+			stos.pop();
+		}
+		
+		
+		//for(int i=0;i&lt;used.size();++i)
+		//	printf("%u %u %u\n",used[i].x,used[i].y,space[used[i].x][used[i].y].kolor);
+		
+		
+		scanf("%u",&amp;q);
+		while(q--)
+		{
+			scanf("%u%u%u%u",&amp;x,&amp;y,&amp;x2,&amp;y2);
+			if(space[x][y].kolor==space[x2][y2].kolor)
+				puts("TAK");
+			else
+				puts("NIE");
+		}
+
+		for(vector&lt;node&gt;::iterator i=used.begin(),e=used.end();i!=e;++i)
+		{
+			space[i-&gt;x][i-&gt;y].clear();
+		}
+		used.clear();
+	}
+	return 0;
+}
+
+</pre></body></html>

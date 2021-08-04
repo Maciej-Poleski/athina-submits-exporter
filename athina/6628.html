@@ -1,0 +1,149 @@
+<html><body><pre style="word-wrap: break-word; white-space: pre-wrap;">#include &lt;cstdio&gt;
+#include &lt;cstring&gt;
+#include &lt;algorithm&gt;
+
+using namespace std;
+
+typedef long long int64;
+typedef unsigned long long uint64;
+typedef long int32;
+typedef unsigned long uint32;
+typedef unsigned int uint;
+
+struct Node
+{
+    char *key;
+    char *value;
+    bool isRed;
+    int count;
+    Node *CH[2];
+
+    Node(const char *const K,const char *const V) : isRed(true), count(1)
+    {
+	CH[0]=CH[1]=0;
+	key=new char[strlen(K)+1];
+	strcpy(key,K);
+	value=new char[strlen(V)+1];
+	strcpy(value,V);
+    }
+
+    ~Node()
+    {
+	delete CH[0];
+	delete CH[1];
+	delete [] key;
+	delete [] value;
+    }
+
+    /*void dump(int p=0)
+    {
+	for(int i=0;i&lt;p;++i) printf(" ");
+	printf("%s %d %d\n",key,(int)isRed,count);
+	if(CH[0]) CH[0]-&gt;dump(p+1); else {for(int i=0;i&lt;=p;++i) printf(" "); printf("[]\n");}
+	if(CH[1]) CH[1]-&gt;dump(p+1); else {for(int i=0;i&lt;=p;++i) printf(" "); printf("[]\n");}
+    }*/
+}*R;
+
+Node *find(Node *R,const char *const key)
+{
+    //printf("W węźle %s szukam %s wynik %d\n",R?R-&gt;key:"NULL",key,R?strcmp(R-&gt;key,key):0);
+    int C;
+    if(R==0 || (C=strcmp(R-&gt;key,key))==0) return R;
+    else return find(R-&gt;CH[C&lt;0],key);
+}
+
+void rotate(Node *&amp;R,bool DIR)
+{
+    Node *T=R;
+    R=T-&gt;CH[DIR];
+    T-&gt;CH[DIR]=R-&gt;CH[!DIR];
+    R-&gt;CH[!DIR]=T;
+
+    R-&gt;CH[!DIR]-&gt;count=1+((R-&gt;CH[!DIR]-&gt;CH[0])?(R-&gt;CH[!DIR]-&gt;CH[0]-&gt;count):0)+((R-&gt;CH[!DIR]-&gt;CH[1])?(R-&gt;CH[!DIR]-&gt;CH[1]-&gt;count):0);
+    R-&gt;count=1+((R-&gt;CH[0])?(R-&gt;CH[0]-&gt;count):0)+((R-&gt;CH[1])?(R-&gt;CH[1]-&gt;count):0);
+}
+
+void insert(Node *&amp;R,const char *const key,const char *const value)
+{
+    if(R==0)
+	R=new Node(key,value);
+    else
+    {
+	int C=strcmp(R-&gt;key,key);
+	if(C==0)
+	{
+	    delete [] R-&gt;value;
+	    R-&gt;value=new char[strlen(value)+1];
+	    strcpy(R-&gt;value,value);
+	    return;
+	}
+	insert(R-&gt;CH[C&lt;0],key,value);
+	R-&gt;count=1+((R-&gt;CH[0])?(R-&gt;CH[0]-&gt;count):0)+((R-&gt;CH[1])?(R-&gt;CH[1]-&gt;count):0);
+	//::R-&gt;dump(); printf("\n");
+	// Dokończyć rotowanie
+	if(R-&gt;CH[0] &amp;&amp; R-&gt;CH[0]-&gt;isRed &amp;&amp; R-&gt;CH[1] &amp;&amp; R-&gt;CH[1]-&gt;isRed)
+	{
+	    R-&gt;CH[0]-&gt;isRed=R-&gt;CH[1]-&gt;isRed=false;
+	    R-&gt;isRed=true;
+	}
+	if(R-&gt;CH[1] &amp;&amp; R-&gt;CH[1]-&gt;isRed)
+	{
+	    rotate(R,true);
+	    swap(R-&gt;isRed,R-&gt;CH[0]-&gt;isRed);
+	}
+	if(R-&gt;CH[0] &amp;&amp; R-&gt;CH[0]-&gt;isRed &amp;&amp; R-&gt;CH[0]-&gt;CH[0] &amp;&amp; R-&gt;CH[0]-&gt;CH[0]-&gt;isRed)
+	{
+	    rotate(R,false);
+	    R-&gt;CH[0]-&gt;isRed=false;
+	    R-&gt;CH[1]-&gt;isRed=false;
+	    R-&gt;isRed=true;
+	}
+    }
+}
+
+Node *select(Node *R,int N)
+{
+    int Cl=(R-&gt;CH[0])?R-&gt;CH[0]-&gt;count:0;
+    if(Cl==N) return R;
+    return (N&lt;Cl)?select(R-&gt;CH[0],N):select(R-&gt;CH[1],N-Cl-1);
+}
+
+int main()
+{
+    int z; scanf("%d",&amp;z);
+    while(z--)
+    {
+	R=0;
+	int64 n; scanf("%lld",&amp;n);
+	while(n--)
+	{
+	    char command[9];
+	    char name[18];
+	    char value[18];
+	    Node *F;
+	    scanf("%s ",command);
+	    switch(*command)
+	    {
+		case 'I':
+		    scanf("%s %s\n",name,value);
+		    insert(R,name,value);
+		    //::R-&gt;dump(); printf("Koniec\n\n");
+		    R-&gt;isRed=false;
+		    break;
+		case 'F':
+		    scanf("%s\n",name);
+		    F=find(R,name);
+		    printf("%s\n",F?F-&gt;value:"ERROR");
+		    break;
+		default:     // SELECT
+		    int N; scanf("%d\n",&amp;N);
+		    F=(N&lt;(R-&gt;count))?select(R,N):0;
+		    printf("%s\n",F?F-&gt;key:"ERROR");
+		    break;
+	    }
+	}
+	delete R;
+    }
+    return 0;
+}
+</pre></body></html>

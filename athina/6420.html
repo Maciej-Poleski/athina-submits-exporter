@@ -1,0 +1,240 @@
+<html><body><pre style="word-wrap: break-word; white-space: pre-wrap;">#include &lt;cstdio&gt;
+#include &lt;algorithm&gt;
+#include &lt;map&gt;
+#include &lt;queue&gt;
+#include &lt;vector&gt;
+
+using namespace std;
+
+#define REP(n,i) for(int i=0;i&lt;n;++i)
+
+struct node;
+
+typedef bool alfabet;		// Wybieram alfabet
+typedef map&lt;alfabet,node*&gt; nmap;
+
+struct node
+{
+    nmap edges;
+    bool pattern;
+    bool visited;
+    node * fail;
+    node *fast;
+
+    node() : pattern(false),visited(false) {}
+
+    ~node()
+    {
+	for(nmap::iterator i=edges.begin(),e=edges.end();i!=e;++i)
+	    delete i-&gt;second;
+    }
+};
+
+void prepare(node *root)
+{
+    queue&lt;node*&gt; Q;
+    for(nmap::iterator i=root-&gt;edges.begin(),e=root-&gt;edges.end();i!=e;++i)
+    {
+	i-&gt;second-&gt;fail=root;
+	i-&gt;second-&gt;fast=root;
+	Q.push(i-&gt;second);
+    }
+    root-&gt;fail=root;
+    root-&gt;fast=root;
+    while(!Q.empty())
+    {
+	node *r=Q.front(); Q.pop();
+	for(nmap::iterator a=r-&gt;edges.begin(),e=r-&gt;edges.end();a!=e;++a)
+	{
+	    node *u=a-&gt;second;
+	    Q.push(u);
+	    node *v=r-&gt;fail;
+	    while(v!=root &amp;&amp; v-&gt;edges.find(a-&gt;first)==v-&gt;edges.end())
+		v=v-&gt;fail;
+	    u-&gt;fail=(v-&gt;edges.find(a-&gt;first)==v-&gt;edges.end())?root:(v-&gt;edges[a-&gt;first]);
+	    u-&gt;fast=(u-&gt;fail-&gt;pattern==false)?u-&gt;fail-&gt;fast:u-&gt;fail;
+	}
+    }
+}
+/*
+vector&lt;int&gt; *G;
+bool *visited;
+int ACStateCount;
+
+void gen(node *root)
+{
+    ACStateCount=count(root);
+    G=new vector&lt;int&gt;[ACStateCount];
+
+    visited=new bool[ACStateCount];
+}
+
+int count(node *root)
+{
+    if(root-&gt;pattern)
+	return 0;
+    int w=1;
+    if(root-&gt;edges.find(false)!=root-&gt;edges.end())
+	w+=count(root-&gt;edges[false]);
+    if(root-&gt;edges.find(true)!=root-&gt;edges.end())
+	w+=count(root-&gt;edges[true]);
+    return w;
+}*/
+
+bool check(node *root)
+{
+    //printf("%s\n","Funkcja check");
+    if(root-&gt;visited)
+	return true;
+    root-&gt;visited=true;
+    bool l,r,le,re,wantright=false,wantleft=false;
+    le=l=(root-&gt;edges.find(false)!=root-&gt;edges.end())?true:false;
+    re=r=(root-&gt;edges.find(true)!=root-&gt;edges.end())?true:false;	// Krawędzie istnieją
+    if(l)
+    {
+	//printf("Krawędź lewa istnieje\n");
+	if(root-&gt;edges[false]-&gt;fast!=root-&gt;edges[false]-&gt;fast-&gt;fail)	// Czy jest sens na nie wchodzić
+	{
+	    //printf("   ale prowadzi do nikąd\n");
+	    l=false;
+	}
+	if(root-&gt;edges[false]-&gt;pattern)			// Czy są wzorcem
+	{
+	    //printf("     oraz jest czarna\n");
+	    wantright=true;
+	    l=false;
+	}
+    }
+    if(r)
+    {
+	//printf("Krawędź prawa istnieje\n");
+	if(root-&gt;edges[true]-&gt;fast!=root-&gt;edges[true]-&gt;fast-&gt;fail)
+	{
+	    //printf("   ale prowadzi do nikąd\n");
+	    r=false;
+	}
+	if(root-&gt;edges[true]-&gt;pattern)
+	{
+	    //printf("     oraz jest czarna\n");
+	    wantleft=true;
+	    r=false;
+	}
+    }
+    if(l)
+	if(check(root-&gt;edges[false]))
+	    return true;
+    if(r)
+	if(check(root-&gt;edges[true]))
+	    return true;
+    if(!(l || r))
+    {
+	if(wantright &amp;&amp; wantleft)
+	{
+	    root-&gt;visited=false;
+	    return false;
+	}
+	if(!(wantright || wantleft))
+	{
+	    root-&gt;visited=false;
+	    return false;
+	}
+	if(wantright)
+	{
+	    if(re)
+	    {
+		root-&gt;visited=false;
+		return false;
+	    }
+	    node *em=root-&gt;fail;
+	    while(em!=em-&gt;fail &amp;&amp; em-&gt;edges.find(true)==em-&gt;edges.end())
+		em=em-&gt;fail;
+	    if(em-&gt;edges.find(true)!=em-&gt;edges.end())
+	    {
+		if(check(em-&gt;edges[true]))
+		{
+		    return true;
+		}
+		else
+		{
+		    root-&gt;visited=false;
+		    return false;
+		}
+	    }
+	    else
+	    {
+		root-&gt;visited=false;
+		return false;
+	    }
+	}
+	if(wantleft)
+	{
+	    if(le)
+	    {
+		root-&gt;visited=false;
+		return false;
+	    }
+	    node *em=root-&gt;fail;
+	    while(em!=em-&gt;fail &amp;&amp; em-&gt;edges.find(false)==em-&gt;edges.end())
+		em=em-&gt;fail;
+	    if(em-&gt;edges.find(false)!=em-&gt;edges.end())
+	    {
+		if(check(em-&gt;edges[false]))
+		{
+		    return true;
+		}
+		else
+		{
+		    root-&gt;visited=false;
+		    return false;
+		}
+	    }
+	    else
+	    {
+		root-&gt;visited=false;
+		return false;
+	    }
+	}
+    }
+    root-&gt;visited=false;
+    return false;
+}
+
+int main()
+{
+    int z;
+    scanf("%d\n",&amp;z);
+    while(z--)
+    {
+	int n;
+	scanf("%d\n",&amp;n);
+	node *root=new node();
+	/* BEGIN STAGE 1 */
+	for(int pattern=1;pattern&lt;=n;++pattern)
+	{
+	    node *ptr=root;
+	    while(true)
+	    {
+		char in;
+		scanf("%c",&amp;in);
+		if(in==EOF || in=='\n')
+		{
+		    ptr-&gt;pattern=true;
+		    break;
+		}
+		bool c=(in=='1')?true:false;
+		if(ptr-&gt;edges.find(c)==ptr-&gt;edges.end())
+		    ptr-&gt;edges[c]=new node();
+		ptr=ptr-&gt;edges[c];
+	    }
+	}
+	/* BEGIN STAGE 2 */
+	prepare(root);
+
+	/* END OF PREPARE */
+
+	printf("%s\n",(!root-&gt;pattern &amp;&amp; check(root))?"TAK":"NIE");
+
+	delete root;
+    }
+}
+</pre></body></html>

@@ -1,0 +1,143 @@
+<html><body><pre style="word-wrap: break-word; white-space: pre-wrap;">#include &lt;cstdio&gt;
+#include &lt;list&gt;
+#include &lt;algorithm&gt;
+
+using namespace std;
+
+
+const int   MAXINT = 2147483647;
+bool        S[501];
+int         n,fmax;
+int         C[501][501], F[501][501];
+int         p[501], cfp[501];
+list&lt;int&gt;   q;
+
+inline void dfs1(int nn)
+{
+    if(!S[nn])
+    {
+        S[nn]=true;
+        for(int k=1;k&lt;=n;++k)
+        {
+            if((C[nn][k]==1 &amp;&amp; F[nn][k]==0) || (C[k][nn]==1 &amp;&amp; F[k][nn]==1))
+            {
+                //printf("%d-&gt;%d\n",nn,k);
+                dfs1(k);
+            }
+        }
+    }
+}
+
+inline void test()
+{
+    for(int ii=1;ii&lt;=n;++ii)
+    {
+        if(S[ii])
+        {
+            for(int jj=1;jj&lt;=n;++jj)
+            {
+                if(C[ii][jj]==1 &amp;&amp; S[jj]==false)
+                {
+                    printf("%d %d\n",ii,jj);
+                    if((--fmax)==0)
+                        return;
+                }
+            }
+        }
+    }
+}
+
+int main()
+{
+    int z;
+    scanf("%d",&amp;z);
+    while(z--)
+    {
+        int m,s,t,cp,x,y,esc,i,j;
+        scanf("%d%d%d%d",&amp;n,&amp;m,&amp;s,&amp;t);
+
+        for(i=0;i&lt;=n;++i)
+            S[i]=false;
+
+  for(i = 1; i &lt;= n; i++)
+    for(j = 1; j &lt;= n; j++) F[i][j] = C[i][j] = 0;
+
+  for(i = 1; i &lt;= m; i++)
+  {
+    scanf("%d%d",&amp;x,&amp;y);
+    C[x][y] = 1;
+  }
+
+  fmax = 0;
+
+  do
+  {
+
+    for(i = 1; i &lt;= n; i++) p[i] = 0;
+    p[s] = -1;
+    cfp[s] = MAXINT;
+    q.clear(); q.push_back(s);
+    esc = 0;
+    while(q.size())
+    {
+      x = q.front(); q.pop_front();
+      for(y = 1; y &lt;= n; y++)
+      {
+        cp = C[x][y] - F[x][y];
+        if(cp &amp;&amp; !p[y])
+        {
+          p[y] = x;
+          cfp[y] = cfp[x] &gt; cp ? cp : cfp[x];
+          if(y == t)
+          {
+             fmax += cfp[t];
+             while(y != s)
+             {
+               x = p[y];
+               F[x][y] += cfp[t];
+               F[y][x] -= cfp[t];
+               y = x;
+             }
+             esc = 1; break;
+
+          }
+          q.push_back(y);
+
+        }
+
+      }
+      if(esc) break;
+
+    }
+    if(!esc) break;
+
+  } while(true);
+
+  /*for(x = 1; x &lt;= n; x++)
+    for(y = 1; y &lt;= n; y++)
+      if(C[x][y])
+          printf("%d -&gt; %d %d/%d\n",x,y,F[x][y],C[x][y]);*/
+
+  printf("%d\n",fmax);
+      dfs1(s);
+
+      /*for(int i=1;i&lt;=n;++i)
+          if(S[i])
+              printf("%d ",i);
+          putchar('\n');*/
+
+    S[s]=true;
+    test();
+    }
+
+    return 0;
+}
+// I Liceum Ogólnokształcące
+// im. K. Brodzińskiego
+// w Tarnowie
+//--------------------------
+// Koło informatyczne 2006/7
+//--------------------------
+// P029 Maksymalny przepływ
+// Wersja z macierzami sąsiedztwa
+</pre></body></html>

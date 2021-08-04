@@ -1,0 +1,44 @@
+<html><body><pre style="word-wrap: break-word; white-space: pre-wrap;">#include &lt;cstdio&gt;
+#include &lt;algorithm&gt;
+#include &lt;vector&gt;
+
+using namespace std;
+
+typedef unsigned long long hash;
+
+hash P=22801763489LL;
+hash tmp[200005];
+
+hash parseInput(int p)
+{
+    int i=p+1;
+    while(getchar()=='(') parseInput(i++);
+    sort(tmp+p+1,tmp+i);
+    hash h=3;
+    for(int x=p+1;x&lt;i;++x)
+	h=(h*P)^tmp[x];
+    h*=7;
+    tmp[p]=h;
+}
+
+int main()
+{
+    int z; scanf("%d",&amp;z);
+    while(z--)
+    {
+	int n; scanf("%d\n",&amp;n);
+	hash tree[n];
+	for(int i=0;i&lt;n;++i)
+	{
+	    /*
+	    if(getchar()=='(') { parseInput(0); tree[i]=tmp[0]; if(i&lt;n-1) scanf("\n"); }
+	    else tree[i]=0;*/
+	    parseInput(0);
+	    tree[i]=tmp[0];
+	}
+	sort(tree,tree+n);
+	printf("%ld\n",unique(tree,tree+n)-tree);
+    }
+    return 0;
+}
+</pre></body></html>

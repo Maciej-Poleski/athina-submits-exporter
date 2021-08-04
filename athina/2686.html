@@ -1,0 +1,316 @@
+<html><body><pre style="word-wrap: break-word; white-space: pre-wrap;">#include &lt;cstdio&gt;
+#include &lt;stdint.h&gt;
+#include &lt;algorithm&gt;
+using namespace std;
+
+inline unsigned int mpow2(unsigned int n)
+{
+	unsigned int wynik=1;
+	while(wynik&lt;n)
+		wynik&lt;&lt;=1;
+	return wynik;
+}
+
+class intTree
+{
+	struct node
+	{
+		size_t	pokrycie;
+		size_t	v;
+		int		vl;
+		int		vr;
+	};
+	int*	eY;
+	size_t	seY;
+	int*	eeY;
+	node*	tab;
+	size_t	stab;
+	size_t	size;
+	
+	void rebuild_add(size_t n,size_t v)
+	{
+		tab[n].pokrycie+=v;
+		n&gt;&gt;=1;
+		while(n &amp;&amp; !tab[n].v)
+		{
+			tab[n].pokrycie+=v;
+			n&gt;&gt;=1;
+		}
+	}
+	
+	void rebuild_sub(size_t n)
+	{
+		if(tab[n].v)
+			return;
+		
+		size_t v;
+		
+		if(((n&lt;&lt;1)|1)&lt;=stab)
+			v=tab[n].pokrycie-(tab[n&lt;&lt;1].pokrycie+tab[(n&lt;&lt;1)|1].pokrycie);
+		else
+			v=tab[n].pokrycie;
+		
+		while(n &amp;&amp; !tab[n].v)
+		{
+			tab[n].pokrycie-=v;
+			n&gt;&gt;=1;
+		}
+	}
+	
+	void add(size_t l,size_t r)
+	{
+		size_t sub=r-l;
+		while(sub)
+		{
+			size_t	i=1;
+			size_t	n=l;
+			for(;!(n&amp;1) &amp;&amp; i&lt;&lt;1&lt;=sub;i&lt;&lt;=1,n&gt;&gt;=1)
+				;
+			l+=i;
+			sub-=i;
+			++tab[n].v;
+			rebuild_add(n,(tab[n].vr-tab[n].vl)-tab[n].pokrycie);
+		}
+	}
+	
+	void sub(size_t l,size_t r)
+	{
+		size_t sub=r-l;
+		//printf("%u %u   %u&lt;br /&gt;\n",l,r,sub);
+		while(sub)
+		{
+			size_t	i=1;
+			size_t	n=l;
+			for(;!(n&amp;1) &amp;&amp; i&lt;&lt;1&lt;=sub;i&lt;&lt;=1,n&gt;&gt;=1);
+			l+=i;
+			sub-=i;
+			--tab[n].v;
+			rebuild_sub(n);
+		}
+	}
+	
+	public:
+		
+		intTree(int* eYP,size_t seYP) : eY(eYP), seY(seYP),size(mpow2(seYP-1)),eeY(eYP+seYP)
+		{
+			size_t i=0;
+			int* wtmp=eY;
+			tab=new node[stab=(size&lt;&lt;1)-1];
+			--tab;
+			for(node *wsk=tab+size,*end=wsk+size;wsk!=end;++wsk)
+			{
+				wsk-&gt;pokrycie=wsk-&gt;v=0;
+				if(++i&lt;seY)
+				{
+					wsk-&gt;vl=*wtmp++;
+					wsk-&gt;vr=*wtmp;
+				}
+			}
+			for(size_t i=size-1;i;--i)
+			{
+				node*	wsk=tab+i;
+				size_t	child=i&lt;&lt;1;
+				wsk-&gt;pokrycie=wsk-&gt;v=0;
+				wsk-&gt;vl=tab[child].vl;
+				wsk-&gt;vr=tab[++child].vr;
+			}
+		}
+		
+		~intTree()
+		{
+			//delete [] eY;
+			delete [] ++tab;
+		}
+		
+		void addInterval(int l,int r)
+		{
+			add(lower_bound(eY,eeY,l)-eY+size,lower_bound(eY,eeY,r)-eY+size);
+		}
+		
+		void subInterval(int l,int r)
+		{
+			sub(lower_bound(eY,eeY,l)-eY+size,lower_bound(eY,eeY,r)-eY+size);
+		}
+		
+		uint64_t get_overlay() const
+		{
+			return (tab+1)-&gt;pokrycie;
+		}
+};
+
+struct event
+{
+	int x,y1,y2;
+	
+	bool operator&lt;(const event&amp; o) const
+	{
+		return x&lt;o.x || (x==o.x &amp;&amp; y2&lt;y1 &amp;&amp; o.y1&lt;o.y2);
+	}
+	
+	bool is_begin() const
+	{
+		return y1&lt;y2;
+	}
+};
+#ifdef intTree_test
+void print_t(intTree &amp;drzewo)
+{
+	printf("&lt;table border=2 cellspacing=0 width=100%&gt;\n&lt;tr&gt;\n");
+	for(size_t i=1;i&lt;=drzewo.stab;++i)
+	{
+		size_t cols=(i==mpow2(i)?drzewo.size/i:drzewo.size/(mpow2(i)/2));
+		printf("&lt;td colspan=%u&gt;\n",cols);
+		
+		printf("&lt;center&gt;&lt;table  border=0&gt;\n&lt;tr&gt;\n&lt;td colspan=2 align=center&gt;%u&lt;/td&gt;\n&lt;/tr&gt;&lt;tr&gt;\n&lt;td colspan=2 align=center&gt;%u&lt;/td&gt;\n&lt;/tr&gt;\n&lt;tr&gt;\n&lt;td align=center&gt;%d&lt;/td&gt;&lt;td align=center&gt;%d&lt;/td&gt;\n&lt;/tr&gt;\n&lt;/table&gt;&lt;/center&gt;\n",drzewo.tab[i].v,drzewo.tab[i].pokrycie,drzewo.tab[i].vl,drzewo.tab[i].vr);
+		
+		printf("&lt;/td&gt;\n");
+		
+		if(i==mpow2(i)-1 || i==1)
+			printf("&lt;/tr&gt;\n&lt;tr&gt;\n");
+	}
+	printf("&lt;/table&gt;");
+}
+#endif
+
+int main()
+{
+	#ifdef intTree_test
+	int *tab=new int[9];
+	tab[0]=-2;
+	tab[1]=0;
+	tab[2]=3;
+	tab[4]=6;
+	tab[5]=8;
+	tab[6]=9;
+	tab[7]=13;
+	tab[8]=14;
+	size_t tabs=9;
+	intTree drzewo(tab,tabs);
+	
+	print_t(drzewo);
+	
+	drzewo.addInterval(3,13);
+	print_t(drzewo);
+	drzewo.addInterval(0,6);
+	print_t(drzewo);
+	drzewo.addInterval(-2,9);
+	print_t(drzewo);
+	drzewo.addInterval(0,14);
+	print_t(drzewo);
+	drzewo.addInterval(6,8);
+	print_t(drzewo);
+	drzewo.subInterval(0,14);
+	print_t(drzewo);
+	drzewo.subInterval(-2,9);
+	print_t(drzewo);
+	#else
+	
+	size_t z;
+	
+	scanf("%u",&amp;z);
+	while(z--)
+	{
+		size_t		m;
+		scanf("%u",&amp;m);
+		
+		int			y[m*2];
+		int			x;
+		uint64_t	wynik=0;
+		event		space2D[m*2];
+		
+		int*		yB=y;
+		int*		yE=y;
+		event*		space2DB=space2D;
+		event*		space2DE=space2D;
+		
+		for(size_t i=0;i&lt;m;++i)
+		{
+			int		x1;
+			int		x2;
+			int		y1;
+			int		y2;
+			
+			scanf("%d%d%d%d",&amp;x1,&amp;x2,&amp;y1,&amp;y2);
+			
+			if(x1==x2 || y1==y2)
+				continue;
+			
+			*yE++			=	y1;
+			*yE++			=	y2;
+			
+			space2DE-&gt;x		=	x1;
+			space2DE-&gt;y1	=	y1;
+			space2DE-&gt;y2	=	y2;
+			
+			++space2DE;
+			
+			space2DE-&gt;x		=	x2;
+			space2DE-&gt;y1	=	y2;
+			space2DE-&gt;y2	=	y1;
+			
+			++space2DE;
+		}
+		
+		if(space2DB==space2DE)
+		{
+			puts("0");
+			continue;
+		}
+		
+		sort(yB,yE);
+		
+		yE=unique(yB,yE);
+		
+		intTree		space1D(yB,yE-yB);
+		
+		sort(space2DB,space2DE);
+		
+		#ifdef dump_y
+		for(size_t i=0;y+i&lt;yE;++i)
+		{
+			printf("%d ",y[i]);
+		}
+		puts("\nKoniec dump_y");
+		#endif
+		
+		#ifdef dump_space2D
+		for(size_t i=0;space2D+i&lt;space2DE;++i)
+		{
+			if(space2D[i].y1&lt;space2D[i].y2)
+			{
+				printf("Początek: x %d\t| y1 %d\t| y2 %d\n",space2D[i].x,space2D[i].y1,space2D[i].y2);
+			}
+			else
+			{
+				printf("Koniec:   x %d\t| y1 %d\t| y2 %d\n",space2D[i].x,space2D[i].y2,space2D[i].y1);
+			}
+		}
+		puts("Koniec dump_space2D");
+		#endif
+		
+		x=space2DB-&gt;x;
+		
+		for(size_t i=0;space2DB!=space2DE;++space2DB,++i)
+		{
+			if(space2DB-&gt;x!=x)
+			{
+				wynik+=space1D.get_overlay()*(space2DB-&gt;x-x);
+				x=space2DB-&gt;x;
+			}
+			
+			if(space2DB-&gt;is_begin())
+				space1D.addInterval(space2DB-&gt;y1,space2DB-&gt;y2);
+			else
+			{
+				space1D.subInterval(space2DB-&gt;y2,space2DB-&gt;y1);
+			}
+		}
+		
+		printf("%llu\n",wynik);
+	}
+	
+	#endif
+	
+	return 0;
+}
+</pre></body></html>

@@ -1,0 +1,260 @@
+<html><body><pre style="word-wrap: break-word; white-space: pre-wrap;">#include &lt;cstdio&gt;
+#include &lt;cstring&gt;
+
+template &lt;class T&gt;
+void swap(T &amp;a,T &amp;b)
+{
+    T t=a;
+    a=b;
+    b=t;
+}
+
+struct train
+{
+    char            *name;
+    train           *ptr[2];
+
+    train(const char *ww)
+    {
+        name=new char[9];
+        memcpy(name,ww,9);
+    }
+
+    ~train()
+    {
+        delete [] name;
+    }
+};
+
+struct slist
+{
+    char            *name;
+    slist           *next;
+    train           *begin;
+    train           *end;
+
+    slist(const char *ww)
+    {
+        name=new char[9];
+        memcpy(name,ww,9);
+    }
+
+    ~slist()
+    {
+        clear();
+        delete [] name;
+    }
+
+    bool empty()
+    {
+        return begin==0;
+    };
+
+    void clear()
+    {
+        train   *old;
+        while(begin!=0)
+        {
+            old=begin;
+            begin=begin-&gt;ptr[begin-&gt;ptr[1]!=0];
+            delete old;
+            if(begin)
+            begin-&gt;ptr[begin-&gt;ptr[1]==old]=0;
+        }
+    }
+
+    /*void dump0()
+    {
+        train   *pt=begin;
+        train   *old=0;
+        train   *o2=0;
+        printf("%s: ",name);
+        while(pt!=end)
+        {
+            printf("%x ",pt);
+            fflush(stdout);
+            printf("%x %x ",pt-&gt;ptr[0],pt-&gt;ptr[1]);
+            fflush(stdout);
+            printf("%s ",pt-&gt;name);
+            fflush(stdout);
+            o2=pt;
+            pt=pt-&gt;ptr[pt-&gt;ptr[1]!=pt &amp;&amp; pt-&gt;ptr[1]!=old];
+            old=o2;
+        }
+        printf("%s\n",pt-&gt;name);
+    }*/
+}*head;
+
+int main()
+{
+    int             z;
+    char            in[9];
+    char            t1[9];
+    scanf("%d\n",&amp;z);
+    while(z--)
+    {
+        int         n;
+        scanf("%d\n",&amp;n);
+        head=0;
+        while(n--)
+        {
+            scanf("%s ",in);
+            if(*in=='N')
+            {
+                scanf("%s %s\n",in,t1);
+                slist   *pt=new slist(in);
+                pt-&gt;next=head;
+                head=pt;
+                head-&gt;begin=head-&gt;end=new train(t1);
+                head-&gt;begin-&gt;ptr[0]=head-&gt;begin-&gt;ptr[1]=0;
+
+                //head-&gt;dump0();
+            }
+            else if(*in=='B')
+            {
+                scanf("%s %s\n",in,t1);
+                slist   *lpt=head;
+                while(strcmp(lpt-&gt;name,in))
+                    lpt=lpt-&gt;next;
+                train   *tpt=lpt-&gt;end-&gt;ptr[lpt-&gt;end-&gt;ptr[1]==0]=new train(t1);
+                tpt-&gt;ptr[0]=lpt-&gt;end;
+                tpt-&gt;ptr[1]=0;
+                lpt-&gt;end=tpt;
+
+                //lpt-&gt;dump0();
+            }
+            else if(*in=='F')
+            {
+                scanf("%s %s\n",in,t1);
+                slist   *lpt=head;
+                while(strcmp(lpt-&gt;name,in))
+                    lpt=lpt-&gt;next;
+                train   *tpt=lpt-&gt;begin-&gt;ptr[lpt-&gt;begin-&gt;ptr[1]==0]=new train(t1);
+                tpt-&gt;ptr[0]=lpt-&gt;begin;
+                tpt-&gt;ptr[1]=0;
+                lpt-&gt;begin=tpt;
+
+                //lpt-&gt;dump0();
+            }
+            else if(*in=='P')
+            {
+                scanf("%s\n",in);
+                slist   *lpt=head;
+                train   *old=0;
+                train   *o2=0;
+                while(strcmp(lpt-&gt;name,in))
+                    lpt=lpt-&gt;next;
+                train   *tpt=lpt-&gt;begin;
+                printf("\"%s\":\n",lpt-&gt;name);
+                while(tpt!=lpt-&gt;end)
+                {
+                    printf("%s&lt;-",tpt-&gt;name);
+                    fflush(stdout);
+                    o2=tpt;
+                    tpt=tpt-&gt;ptr[tpt-&gt;ptr[1]!=tpt &amp;&amp; tpt-&gt;ptr[1]!=old];
+                    old=o2;
+                }
+                printf("%s\n",lpt-&gt;end-&gt;name);
+            }
+            else if(*in=='R')
+            {
+                scanf("%s\n",in);
+                slist   *lpt=head;
+                while(strcmp(lpt-&gt;name,in))
+                    lpt=lpt-&gt;next;
+                swap(lpt-&gt;begin,lpt-&gt;end);
+
+                //lpt-&gt;dump0();
+            }
+            else if(*in=='U')
+            {
+                scanf("%s %s\n",in,t1);
+                slist       *lpt1=head;
+                slist       **lpt2=&amp;head;
+                slist       *old;
+                while(strcmp(lpt1-&gt;name,in))
+                    lpt1=lpt1-&gt;next;
+                while(strcmp((*lpt2)-&gt;name,t1))
+                    lpt2=&amp;((*lpt2)-&gt;next);
+                old=*lpt2;
+
+                *lpt2=(*lpt2)-&gt;next;
+
+                lpt1-&gt;end-&gt;ptr[lpt1-&gt;end-&gt;ptr[1]==0]=old-&gt;begin;
+                old-&gt;begin-&gt;ptr[old-&gt;begin-&gt;ptr[1]==0]=lpt1-&gt;end;
+                lpt1-&gt;end=old-&gt;end;
+
+                old-&gt;begin=old-&gt;end=0;
+
+                delete old;
+
+                //lpt1-&gt;dump0();
+            }
+            else if(*in=='D')
+            {
+                if(in[3]=='F')
+                {
+                    scanf("%s %s\n",in,t1);
+                    slist   *lpt1=head;
+                    while(strcmp(lpt1-&gt;name,t1))
+                        lpt1=lpt1-&gt;next;
+                    if(lpt1-&gt;begin==lpt1-&gt;end)
+                    {
+                        memcpy(lpt1-&gt;name,in,9);
+                    }
+                    else
+                    {
+                        train   *tpt=new train(lpt1-&gt;begin-&gt;name);
+                        slist   *nht=new slist(in);
+                        nht-&gt;next=head;
+                        nht-&gt;begin=nht-&gt;end=tpt;
+                        tpt=lpt1-&gt;begin;
+                        lpt1-&gt;begin=lpt1-&gt;begin-&gt;ptr[lpt1-&gt;begin-&gt;ptr[1]!=0];
+                        delete tpt;
+                        head=nht;
+                        lpt1-&gt;begin-&gt;ptr[lpt1-&gt;begin-&gt;ptr[1]==tpt]=0;
+                        head-&gt;begin-&gt;ptr[0]=head-&gt;begin-&gt;ptr[1]=0;
+                    }
+                }
+                else if(in[3]=='B')
+                {
+                    scanf("%s %s\n",t1,in);
+                    slist   *lpt1=head;
+                        while(strcmp(lpt1-&gt;name,t1))
+                    lpt1=lpt1-&gt;next;
+                    if(lpt1-&gt;begin==lpt1-&gt;end)
+                    {
+                        memcpy(lpt1-&gt;name,in,9);
+                    }
+                    else
+                    {
+                        train   *tpt=new train(lpt1-&gt;end-&gt;name);
+                        slist   *nht=new slist(in);
+                        nht-&gt;next=head;
+                        nht-&gt;begin=nht-&gt;end=tpt;
+                        tpt=lpt1-&gt;end;
+                        lpt1-&gt;end=lpt1-&gt;end-&gt;ptr[lpt1-&gt;end-&gt;ptr[1]!=0];
+                        delete tpt;
+                        head=nht;
+                        lpt1-&gt;end-&gt;ptr[lpt1-&gt;end-&gt;ptr[1]==tpt]=0;
+                        head-&gt;begin-&gt;ptr[0]=head-&gt;begin-&gt;ptr[1]=0;
+                    }
+                }
+                else
+                    throw 123;
+            }
+            else
+                throw 123;
+            
+        }
+        while(head)
+        {
+            slist   *th=head-&gt;next;
+            head-&gt;clear();
+            delete head;
+            head=th;
+        }
+    }
+    return 0;
+}
+</pre></body></html>

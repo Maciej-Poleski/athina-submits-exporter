@@ -1,0 +1,90 @@
+<html><body><pre style="word-wrap: break-word; white-space: pre-wrap;">#include &lt;cstdio&gt;
+
+//#define debug
+
+int *tab,tmp;
+unsigned int z,n,q;
+
+unsigned int findF(unsigned int l,unsigned int p,int x)
+{
+    #ifdef debug
+    puts("findF");
+    #endif
+    unsigned int s;
+    while(l&lt;p)
+    {
+	s=(l+p)/2;
+	#ifdef debug
+	printf("l: %u s: %u p: %u\n",l,s,p);
+	#endif
+	if(tab[s]&lt;x)
+	    l=s+1;
+	else
+	    p=s;
+    }
+    #ifdef debug
+    printf("l: %u s: %u p: %u\n",l,s,p);
+    if(tab[z-1]&lt;x)
+    #else
+    if(tab[n-1]&lt;x)
+    #endif
+	++l;
+    return l;
+}
+
+unsigned int findL(unsigned int l,unsigned int p,int x)
+{
+    #ifdef debug
+    puts("findL");
+    #endif
+    unsigned int s;
+    while(l&lt;p)
+    {
+	s=(l+p)/2;
+	#ifdef debug
+	printf("l: %u s: %u p: %u\n",l,s,p);
+	#endif
+	if(tab[s]&lt;=x)
+	    l=s+1;
+	else
+	    p=s;
+    }
+    #ifdef debug
+    printf("l: %u s: %u p: %u\n",l,s,p);
+    #endif
+    return l;
+}
+
+int main()
+{
+    scanf("%u",&amp;z);
+    #ifndef debug
+    while(z--)
+    {
+	scanf("%u",&amp;n);
+	tab=new int[n];
+	for(unsigned int i=0;i&lt;n;++i)
+	    scanf("%d",tab+i);
+	scanf("%u",&amp;q);
+	while(q--)
+	{
+	    scanf("%d",&amp;tmp);
+	    printf("%u\n",findL(0,n,tmp)-findF(0,n-1,tmp));
+	}
+	delete [] tab;
+    }
+    #else
+    tab=new int[z];
+    for(unsigned int i=0;i&lt;z;++i)
+	scanf("%d",tab+i);
+    while(true)
+    {
+	scanf("%d",&amp;tmp);
+	n=findF(0,z-1,tmp);
+	q=findL(0,z,tmp);
+	printf("Początek: %u Koniec: %u Ilość: %u\n",n,q,q-n);
+    }
+    #endif
+    return 0;
+}
+</pre></body></html>

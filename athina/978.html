@@ -1,0 +1,41 @@
+<html><body><pre style="word-wrap: break-word; white-space: pre-wrap;">#include &lt;iostream&gt;
+#include &lt;cmath&gt;
+#include &lt;iomanip&gt;
+using namespace std;
+
+double x,y,c;
+
+double f(double w)
+{
+	return 1/sqrt(x*x-w*w)+1/sqrt(y*y-w*w)-1/c;
+}
+
+double min(double l,double p)
+{
+	if(l&lt;p)
+		return l;
+	return p;
+}
+
+int main()
+{
+	ios_base::sync_with_stdio(0);
+	unsigned int z;
+	cin&gt;&gt;z;
+	while(z--)
+	{
+		cin&gt;&gt;x&gt;&gt;y&gt;&gt;c;
+		double tmp=min(x,y)/2,st=tmp/2,pr=0.0000000001;
+		while(f(tmp) &amp;&amp; st)
+		{
+			if(f(tmp)&lt;0)
+				tmp+=st;
+			else
+				tmp-=st;
+			st/=2;
+		}
+		cout&lt;&lt;fixed&lt;&lt;setprecision(3)&lt;&lt;tmp&lt;&lt;'\n';
+	}
+	return 0;
+}
+</pre></body></html>

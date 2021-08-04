@@ -1,0 +1,30 @@
+<html><body><pre style="word-wrap: break-word; white-space: pre-wrap;">#include &lt;cstdio&gt;
+
+unsigned int n;
+
+int main()
+{
+    unsigned int size;
+    int *tab,wynik,tmp,scan;
+    scanf("%u",&amp;n);
+    while(n--)
+    {
+	scanf("%u",&amp;size);
+	tab=new int[size];
+	wynik=tmp=0;
+	for(unsigned int i=0;i&lt;size;++i)
+	{
+	    scanf("%u",&amp;scan);
+	    if(tmp&gt;=0)
+		tmp+=scan;
+	    else
+		tmp=scan;
+	    if(tmp&gt;wynik)
+		wynik=tmp;
+	}
+	printf("%u\n",wynik);
+	delete [] tab;
+    }
+    return 0;
+}
+</pre></body></html>

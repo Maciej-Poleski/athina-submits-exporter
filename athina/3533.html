@@ -1,0 +1,94 @@
+<html><body><pre style="word-wrap: break-word; white-space: pre-wrap;">#include &lt;cstdio&gt;
+#include &lt;string&gt;
+#include &lt;map&gt;
+
+using namespace std;
+
+uint32_t	D[200][200];
+string		*N;
+char		temp[11];
+char		temp2[11];
+uint32_t	n;
+
+const uint32_t inf=0xffffffff-1000002;
+
+int main()
+{
+	uint32_t	z;
+	scanf("%u",&amp;z);
+	while(z--)
+	{
+		map&lt;string,uint32_t&gt;	M;
+		uint32_t				m;
+		scanf("%u\n",&amp;n);
+		
+		N=new string[n];
+		
+		for(uint32_t i=0;i&lt;n;++i)
+			for(uint32_t j=0;j&lt;n;++j)
+				D[i][j]=inf;
+			
+		for(uint32_t i=0;i&lt;n;++i)
+			D[i][i]=0;
+		
+		for(uint32_t i=0;i&lt;n;++i)
+		{
+			gets(temp);
+			N[i]=temp;
+			M.insert(pair&lt;string,uint32_t&gt;(temp,i));
+		};
+		
+		/*for(map&lt;string,uint32_t&gt;::iterator i=M.begin(),e=M.end();i!=e;++i)
+		{
+			printf("%s %u\n",i-&gt;first.c_str(),i-&gt;second);
+		}
+		
+		for(uint32_t i=0;i&lt;n;++i)
+			printf("%s\n",N[i].c_str());*/
+			
+		scanf("%u\n",&amp;m);
+		while(m--)
+		{
+			scanf("%s %s",temp,temp2);
+			scanf("%u\n",&amp;D[M[temp]][M[temp2]]);
+			D[M[temp2]][M[temp]]=D[M[temp]][M[temp2]];
+		}
+		
+		/*for(uint32_t i=0;i&lt;n;++i)
+		{
+			for(uint32_t j=0;j&lt;n;++j)
+				printf("%u\t\t",D[i][j]);
+			putchar('\n');
+		}*/
+		
+		for(uint32_t i=0;i&lt;n;++i)
+			for(uint32_t j=0;j&lt;n;++j)
+				for(uint32_t k=0;k&lt;n;++k)
+					if(D[j][k]&gt;D[j][i]+D[i][k])
+						D[j][k]=D[j][i]+D[i][k];
+		
+		/*for(uint32_t i=0;i&lt;n;++i)
+		{
+			for(uint32_t j=0;j&lt;n;++j)
+				printf("%u\t\t",D[i][j]);
+			putchar('\n');
+		}*/
+		
+		printf("%12s","");
+		for(uint32_t i=0;i&lt;n;++i)
+			printf("%12s",N[i].c_str());
+		putchar('\n');
+		
+		for(uint32_t i=0;i&lt;n;++i)
+		{
+			printf("%12s",N[i].c_str());
+			for(uint32_t j=0;j&lt;n;++j)
+				printf("%12u",D[i][j]);
+			putchar('\n');
+		}
+		
+		delete [] N;
+	}
+	return 0;
+}
+</pre></body></html>

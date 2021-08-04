@@ -1,0 +1,163 @@
+<html><body><pre style="word-wrap: break-word; white-space: pre-wrap;">#include &lt;cstdio&gt;
+
+template &lt;class T&gt;
+inline T max(T a,T b)
+{
+    return a&gt;b?a:b;
+}
+
+inline int mpow2(int n)
+{
+    int wynik=1;
+    while(wynik&lt;n)
+        wynik&lt;&lt;=1;
+    return wynik;
+}
+
+inline void ign()
+{
+    while(getchar()!='\n');
+}
+
+struct node
+{
+    int s;
+    int v;
+    int mp;
+    int ms;
+
+    node() : s(0),v(0),mp(0),ms(0) {}
+
+    void app(int a)
+    {
+        s=a;
+        mp=ms=v=max(s,0);
+    }
+}*tree;
+
+int     n;
+int     s;
+
+inline void comp_tree(int q)
+{
+    tree[q].s=tree[q&lt;&lt;1].s+tree[(q&lt;&lt;1)|1].s;
+    tree[q].mp=max(tree[q&lt;&lt;1].mp,tree[q&lt;&lt;1].s+tree[(q&lt;&lt;1)|1].mp);
+    tree[q].ms=max(tree[(q&lt;&lt;1)|1].ms,tree[(q&lt;&lt;1)|1].s+tree[q&lt;&lt;1].ms);
+    tree[q].v=max(tree[q&lt;&lt;1].v,tree[(q&lt;&lt;1)|1].v);
+    tree[q].v=max(tree[q].v,tree[q&lt;&lt;1].ms+tree[(q&lt;&lt;1)|1].mp);
+}
+
+#ifdef dump_tree
+inline void dump_node(int q)
+{
+    printf("&lt;center&gt;&lt;table border=1 cellspacing=0&gt;&lt;tr&gt;&lt;td&gt;%d&lt;/td&gt;&lt;td&gt;%d&lt;/td&gt;&lt;/tr&gt;&lt;tr&gt;&lt;td&gt;%d&lt;/td&gt;&lt;td&gt;%d&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;&lt;/center&gt;",tree[q].s,tree[q].v,tree[q].mp,tree[q].ms);
+}
+
+inline void dump_tree()
+{
+    int i=1;
+    printf("&lt;table border=0&gt;\n");
+    for(int j=1;j&lt;=s;j*=2)
+    {
+        printf("&lt;tr&gt;\n");
+        for(int k=1;k&lt;=j;++k)
+        {
+            printf("&lt;td colspan=%d&gt;",s/j);
+            dump_node(i++);
+            printf("&lt;/td&gt;\n");
+        }
+        printf("&lt;/tr&gt;\n");
+    }
+    printf("&lt;/table&gt;\n");
+}
+#else
+#define dump_node()
+#define dump_tree()
+#endif
+
+inline node comp(node &amp;a,node &amp;b)
+{
+    node w;
+    w.s=a.s+b.s;
+    w.mp=max(a.mp,a.s+b.mp);
+    w.ms=max(b.ms,b.s+a.ms);
+    w.v=max(max(a.v,b.v),a.ms+b.mp);
+    return w;
+}
+
+int main()
+{
+    int z;
+    scanf("%d\n",&amp;z);
+    while(z--)
+    {
+        int     m;
+        int     t;
+        int     w;
+        char    c;
+        scanf("%d %d\n",&amp;n,&amp;m);
+        s=mpow2(n);
+        tree=new node[s&lt;&lt;1];
+        
+        for(int i=s;i&lt;s+n;++i)
+        {
+            scanf("%d ",&amp;t);
+            tree[i].app(t);
+        }
+
+        dump_tree();
+
+        for(int i=s-1;i&gt;0;--i)
+            comp_tree(i);
+
+        dump_tree();
+        
+        while(m--)
+        {
+            c=getchar();
+            ign();
+
+            switch(c)
+            {
+                case 'U':
+                    scanf("%d %d\n",&amp;t,&amp;w);
+                    t+=s-1;
+                    tree[t].app(w);
+                    t&gt;&gt;=1;
+                    while(t!=0)
+                    {
+                        comp_tree(t);
+                        t&gt;&gt;=1;
+                    }
+                    dump_tree();
+                    break;
+                default:
+                    scanf("%d %d\n",&amp;t,&amp;w);
+                    node e;
+                    int r=w-t;
+                    --t;
+                    --w;
+                    t+=s;
+                    w+=s;
+                    ++r;
+
+                    //printf("%d %d %d:",r,t,w);
+                    while(r)
+                    {
+                        int i=1;
+                        for(;(t&amp;1)==0 &amp;&amp; r-(i&lt;&lt;1)&gt;=0;t&gt;&gt;=1,i&lt;&lt;=1);
+                        //printf(" %d",t);
+                        e=comp(e,tree[t]);
+                        r-=i;
+                        t=w-r+1;
+                    }
+                    //putchar('\n');
+                    printf("%d\n",e.v);
+                    break;
+            }
+        }
+
+        delete [] tree;
+    }
+}
+</pre></body></html>

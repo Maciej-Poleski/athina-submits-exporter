@@ -1,0 +1,140 @@
+<html><body><pre style="word-wrap: break-word; white-space: pre-wrap;">#include &lt;cstdio&gt;
+#include &lt;string&gt;
+//#include &lt;vector&gt;
+#include &lt;algorithm&gt;
+
+using namespace std;
+
+struct edge
+{
+	uint32_t	s;
+	uint32_t	d;
+	uint32_t	w;
+	
+	edge() {}
+	
+	edge(uint32_t ss,uint32_t dd,uint32_t vv) : s(ss),d(dd),w(vv) {}
+	
+	bool operator&lt;(const edge &amp;o) const
+	{
+		return w&lt;o.w;
+	}
+};
+
+struct node
+{
+	uint32_t	p;
+	uint32_t	r;
+	
+	node() {}
+	
+	node(uint32_t pp,uint32_t rr) : p(pp),r(rr) {}
+};
+
+edge		*graf;
+node		*las;
+string		*osiedla;
+uint32_t	n;
+uint32_t	m;
+uint64_t	wynik;
+char		temp[16];
+char		temp2[16];
+
+uint32_t parent(uint32_t n)
+{
+	if(n==las[n].p)
+		return n;
+	
+	return las[n].p=parent(las[n].p);
+}
+
+bool family(uint32_t a,uint32_t b)
+{
+	return parent(a)==parent(b);
+}
+
+void scal(uint32_t a,uint32_t b)
+{
+	a=parent(a);
+	b=parent(b);
+	if(las[a].r==las[b].r)
+	{
+		++las[b].r;
+		las[a].p=b;
+	}
+	else if(las[a].r&lt;las[b].r)
+	{
+		las[a].p=b;
+	}
+	else
+	{
+		las[b].p=a;
+	}
+}
+
+int main()
+{
+	uint32_t	z;
+	scanf("%u",&amp;z);
+	while(z--)
+	{
+		scanf("%u%u",&amp;n,&amp;m);
+		getchar();
+		
+		graf=new edge[m];
+		las=new node[n];
+		osiedla=new string[n];
+		
+		for(string *i=osiedla,*e=osiedla+n;i!=e;++i)
+		{
+			gets(temp);
+			i-&gt;assign(temp);
+		}
+		//getchar();
+		
+		/*sort(osiedla,osiedla+n);
+		
+		for(uint32_t i=0;i&lt;n;++i)
+			printf("%s\n",osiedla[i].c_str());
+		*/
+		
+		for(edge *i=graf,*e=graf+m;i!=e;++i)
+		{
+			scanf("%s %s %u",temp,temp2,&amp;(i-&gt;w));
+			
+			i-&gt;s=lower_bound(osiedla,osiedla+n,temp)-osiedla;
+			i-&gt;d=lower_bound(osiedla,osiedla+n,temp2)-osiedla;
+		}
+		
+		sort(graf,graf+m);
+		
+		for(node *i=las,*e=las+n;i!=e;++i)
+		{
+			i-&gt;p=i-las;
+			i-&gt;r=0;
+		}
+		
+		wynik=0;
+		
+		//for(uint32_t i=0;i&lt;m;++i)
+		//	printf("%u %u %u\n",graf[i].s,graf[i].d,graf[i].w);
+		
+		for(edge *i=graf,*e=graf+m;i!=e;++i)
+		{
+			if(family(i-&gt;s,i-&gt;d))
+				continue;
+			
+			wynik+=i-&gt;w;
+			
+			scal(i-&gt;s,i-&gt;d);
+		}
+		
+		printf("%llu\n",wynik);
+		
+		delete [] graf;
+		delete [] las;
+		delete [] osiedla;
+	}
+	return 0;
+}
+</pre></body></html>

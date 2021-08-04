@@ -1,0 +1,157 @@
+<html><body><pre style="word-wrap: break-word; white-space: pre-wrap;">#include &lt;cstdio&gt;
+#include &lt;stdint.h&gt;
+
+template&lt;class T&gt;
+void swap (T&amp;a,T&amp;b)
+{
+	T t=a;
+	a=b;
+	b=t;
+}
+
+template&lt;class T&gt;
+struct heap
+{
+	T		*tab;
+	size_t	size;
+
+	public:
+
+	heap(T *w,size_t s): tab(w),size(s)
+	{
+		--tab;
+		for(size_t i=s&gt;&gt;1;i&gt;0;--i)
+			rebuild_down(i);
+	}
+
+	~heap()
+	{
+		delete [] ++tab;
+	}
+
+	void rebuild_tree()
+	{
+		size_t	n=1;
+		size_t	i;
+		//printf("Rebuild dla %u\n",n);
+		while((n&lt;&lt;1)&lt;=size)
+		{
+			//puts("A");
+			i=n;
+			if(tab[i]&lt;tab[i&lt;&lt;1])
+				i&lt;&lt;=1;
+			if(((n&lt;&lt;1)|1)&lt;=size &amp;&amp; tab[i]&lt;tab[(n&lt;&lt;1)|1])
+				i=(n&lt;&lt;1)|1;
+			if(tab[n]&lt;tab[i])
+			{
+				//printf("Zamianiam komitet %u i %u\n",tab[n].i+1,tab[i].i+1);
+				swap(tab[n],tab[i]);
+				n=i;
+			}
+			else
+				break;
+		}
+		//puts("E");
+	}
+	
+	void rebuild_down(size_t n)
+	{
+		size_t i;
+		//printf("Rebuild dla %u\n",n);
+		while((n&lt;&lt;1)&lt;=size)
+		{
+			//puts("A");
+			i=n;
+			if(tab[i]&lt;tab[i&lt;&lt;1])
+				i&lt;&lt;=1;
+			if(((n&lt;&lt;1)|1)&lt;=size &amp;&amp; tab[i]&lt;tab[(n&lt;&lt;1)|1])
+				i=(n&lt;&lt;1)|1;
+			if(tab[n]&lt;tab[i])
+			{
+				//printf("Zamianiam komitet %u i %u\n",tab[n].i+1,tab[i].i+1);
+				swap(tab[n],tab[i]);
+				n=i;
+			}
+			else
+			{
+				break;
+			}
+		}
+		//puts("E");
+	}
+	
+	T &amp; max()
+	{
+		return tab[1];
+	}
+	
+	void dump_tab()
+	{
+		printf("Size: %u\n",size);
+		for(size_t i=1;i&lt;=size;++i)
+		{
+			printf("%lf ",static_cast&lt;double&gt;(tab[i].l)/tab[i].d);
+		}
+		putchar('\n');
+	}
+};
+
+struct komitet
+{
+	uint64_t	l;	//g�osy
+	size_t		d;	//dzielnik
+	size_t		i;	//nr
+	size_t		m;	//ilo�� mandat�w
+	
+	komitet(): d(1), m(0) {}
+	
+	bool operator&lt;(const komitet &amp;o) const
+	{
+		return l*o.d&lt;o.l*d || (l*o.d==o.l*d &amp;&amp; (l&lt;o.l || (l==o.l &amp;&amp; i&gt;o.i)));
+	}
+};
+	
+int main()
+{
+	uint32_t z;
+	scanf("%u",&amp;z);
+	while(z--)
+	{
+		uint32_t	n;
+		uint32_t	m;
+		uint32_t	i=0;
+		size_t		*matryca;
+		komitet		*tab;
+		
+		scanf("%u%u",&amp;n,&amp;m);
+		tab=new komitet[n];
+		
+		for(komitet *wsk=tab,*end=tab+n;wsk!=end;++wsk,++i)
+		{
+			scanf("%u",&amp;(wsk-&gt;l));
+			wsk-&gt;i=i;
+		}
+		
+		heap&lt;komitet&gt; kopiec(tab,n);
+		
+		//kopiec.dump_tab();
+		
+		for(uint32_t i=0;i&lt;m;++i)
+		{
+			++kopiec.max().m;
+			++kopiec.max().d;
+			//printf("Komitet %u ma teraz %u mandat�w\n",kopiec.max().i,kopiec.max().m);
+			kopiec.rebuild_tree();
+		}
+		
+		matryca=new size_t[n];
+		
+		for(size_t i=1;i&lt;=n;++i)
+			matryca[kopiec.tab[i].i]=kopiec.tab[i].m;
+		
+		for(size_t *i=matryca,*end=matryca+n;i!=end;++i)
+			printf("%u\n",*i);
+	}
+	return 0;
+}
+</pre></body></html>

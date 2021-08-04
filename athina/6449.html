@@ -1,0 +1,77 @@
+<html><body><pre style="word-wrap: break-word; white-space: pre-wrap;">#include &lt;cstdio&gt;
+#include &lt;complex&gt;
+#include &lt;utility&gt;
+
+#define REP(n,i) for(int i=0;i&lt;n;++i)
+
+using namespace std;
+
+void kmp(pair&lt;complex&lt;long long&gt;,complex&lt;long long&gt; &gt;* const W,const int N,int* const PS,pair&lt;complex&lt;long long&gt;,complex&lt;long long&gt; &gt;* const T,const int M,int* const R)
+{
+    int t=-1;
+    for(int j=0;j&lt;=M;++j)
+    {
+	while(t&gt;=0 &amp;&amp; T[j-1].second*W[t].first!=T[j-1].first*W[t].second)
+	    t=PS[t];
+	R[j]=++t;
+	if(t==N)
+	    t=PS[t];
+    }
+}
+
+int main()
+{
+    int z;
+    scanf("%d",&amp;z);
+    while(z--)
+    {
+	int n;
+	scanf("%d",&amp;n);
+	pair&lt;int,int&gt; *A=new pair&lt;int,int&gt;[n+1];		// Współrzędne
+	REP(n,i) scanf("%d%d",&amp;A[i].first,&amp;A[i].second);
+	pair&lt;int,int&gt; *B=new pair&lt;int,int&gt;[n+1];
+	REP(n,i) scanf("%d%d",&amp;B[i].first,&amp;B[i].second);
+	A[n]=A[0];
+	B[n]=B[0];
+	complex&lt;long long&gt; *T=new complex&lt;long long&gt;[n+1];	// Wektory
+	complex&lt;long long&gt; *P=new complex&lt;long long&gt;[n+1];
+	REP(n,i)
+	{
+	    complex&lt;long long&gt; a(A[i+1].first-A[i].first,A[i+1].second-A[i].second);
+	    //complex&lt;long long&gt; b(A[i+2].first-A[i+1].first,A[i+2].second-A[i+1].second);
+	    complex&lt;long long&gt; c(B[i+1].first-B[i].first,B[i+1].second-B[i].second);
+	    //complex&lt;long long&gt; d(B[i+2].first-B[i+1].first,B[i+2].second-B[i+1].second);
+	    T[i]=a;
+	    P[i]=c;
+	    //printf("a: %lld %lld | b: %lld %lld | c: %lld %lld | d: %lld %lld\n",a.real(),a.imag(),b.real(),b.imag(),c.real(),c.imag(),d.real(),d.imag());
+	}
+	T[n]=T[0];
+	P[n]=P[0];
+	//REP(n,i) T[n+i]=T[i];
+	delete [] A;
+	delete [] B;
+
+	pair&lt;complex&lt;long long&gt;,complex&lt;long long&gt; &gt; TT[n*2];	// Tekst
+	pair&lt;complex&lt;long long&gt;,complex&lt;long long&gt; &gt; PP[n];	// Wzorzec
+
+	REP(n,i) TT[i]=make_pair(T[i],T[i+1]),PP[i]=make_pair(P[i],P[i+1]);
+	REP(n,i) TT[n+i]=TT[i];
+
+	delete [] T;
+	delete [] P;
+
+	int PS[n+5];
+	int R[2*n+5];
+	PS[0]=R[0]=-1;
+	kmp(PP,n,PS,PP+1,n-1,PS+1);
+	kmp(PP,n,PS,TT,n*2,R);
+
+	int max=0;
+	//REP(n*2+1,i) printf("%d ",R[i]);
+	//printf("\n");
+	REP(n*2+1,i) max=((max&lt;R[i])?R[i]:max);
+	printf("%s\n",max&gt;=n?"TAK":"NIE");
+    }
+    return 0;
+}
+</pre></body></html>

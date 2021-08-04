@@ -1,0 +1,147 @@
+<html><body><pre style="word-wrap: break-word; white-space: pre-wrap;">#include &lt;cstdio&gt;
+#include &lt;algorithm&gt;
+#include &lt;map&gt;
+#include &lt;queue&gt;
+
+using namespace std;
+
+#define REP(n,i) for(int i=0;i&lt;n;++i)
+
+struct node;
+
+typedef int alfabet;		// Wybieram alfabet
+typedef map&lt;alfabet,node*&gt; nmap;
+
+int patternsCount;
+int *length;
+
+struct node
+{
+    nmap edges;
+    int pattern;
+    node * fail;
+    node *fast;
+
+    node() : pattern(-1) {}
+
+    ~node()
+    {
+	for(nmap::iterator i=edges.begin(),e=edges.end();i!=e;++i)
+	    delete i-&gt;second;
+    }
+};
+
+void prepare(node *root)
+{
+    queue&lt;node*&gt; Q;
+    for(nmap::iterator i=root-&gt;edges.begin(),e=root-&gt;edges.end();i!=e;++i)
+    {
+	i-&gt;second-&gt;fail=root;
+	i-&gt;second-&gt;fast=root;
+	Q.push(i-&gt;second);
+    }
+    root-&gt;fail=root;
+    root-&gt;fast=root;
+    while(!Q.empty())
+    {
+	node *r=Q.front(); Q.pop();
+	for(nmap::iterator a=r-&gt;edges.begin(),e=r-&gt;edges.end();a!=e;++a)
+	{
+	    node *u=a-&gt;second;
+	    Q.push(u);
+	    node *v=r-&gt;fail;
+	    while(v!=root &amp;&amp; v-&gt;edges.find(a-&gt;first)==v-&gt;edges.end())
+		v=v-&gt;fail;
+	    u-&gt;fail=(v-&gt;edges.find(a-&gt;first)==v-&gt;edges.end())?root:(v-&gt;edges[a-&gt;first]);// CHOKE ME!
+	    u-&gt;fast=(u-&gt;fail-&gt;pattern==-1)?u-&gt;fail-&gt;fast:u-&gt;fail;			// PREPARE OUT!!!!!
+	}
+    }
+}
+
+void dump(node *root,int l)
+{
+    if(root-&gt;pattern==-1)
+	root=root-&gt;fast;
+    for(;root!=root-&gt;fail;root=root-&gt;fast)
+    {
+	printf("%d %d\n",root-&gt;pattern,l+1-length[root-&gt;pattern]);
+    }
+}
+
+#ifdef debug
+void discover(node *root)
+{
+    if(root-&gt;pattern!=-1)
+	printf(":%d %d\n",root-&gt;pattern,length[root-&gt;pattern]);
+    {
+	for(nmap::iterator i=root-&gt;edges.begin(),e=root-&gt;edges.end();i!=e;++i)
+	{
+	    printf("%d ",i-&gt;first);
+	    discover(i-&gt;second);
+	}
+    }
+}
+#endif
+
+int main()
+{
+    int z;
+    scanf("%d",&amp;z);
+    while(z--)
+    {
+	int n;
+	scanf("%d",&amp;n);
+	patternsCount=n;
+	node *root=new node();
+	length=new int[n+1];
+	/* BEGIN STAGE 1 */
+	for(int pattern=1;pattern&lt;=n;++pattern)
+	{
+	    int l;
+	    scanf("%d",&amp;l);
+	    length[pattern]=l;
+	    node *ptr=root;
+	    while(l--)
+	    {
+		alfabet c;
+		scanf("%d",&amp;c);
+		if(ptr-&gt;edges.find(c)==ptr-&gt;edges.end())
+		    ptr-&gt;edges[c]=new node();
+		ptr=ptr-&gt;edges[c];
+		if(l==0)
+		    ptr-&gt;pattern=pattern;
+	    }
+	}
+	/* BEGIN STAGE 2 */
+	prepare(root);
+
+	/* END OF PREPARE */
+
+	int l;
+	scanf("%d",&amp;l);
+	node *q=root;
+	for(int i=1;i&lt;=l;++i)
+	{
+	    bool ok=true;
+	    alfabet c;
+	    scanf("%d",&amp;c);
+	    while((((q==0)?q=root:false) || true) &amp;&amp; q-&gt;edges.find(c)==q-&gt;edges.end())
+	    {
+		if(q==root)
+		{
+		    ok=false;
+		    break;
+		}
+		q=q-&gt;fail;
+	    }
+	    if(!ok)
+		continue;
+	    q=q-&gt;edges[c];
+	    dump(q,i);
+	}
+	printf("-1 -1\n");
+	delete [] length;
+	delete root;
+    }
+}
+</pre></body></html>

@@ -1,0 +1,25 @@
+<html><body><pre style="word-wrap: break-word; white-space: pre-wrap;">#include &lt;cstdio&gt;
+
+char *tab,z;
+unsigned int n;
+
+int main()
+{
+	scanf("%d",&amp;n);
+	getchar();
+	tab=new char[1000];
+	while(n--)
+	{
+		unsigned int i=0;
+		while((z=getchar())!='\n')
+			tab[i++]=z;
+		while(i)
+			putchar(tab[--i]);
+		puts("");
+	}
+
+	return 0;
+}
+
+
+</pre></body></html>

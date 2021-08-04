@@ -1,0 +1,52 @@
+<html><body><pre style="word-wrap: break-word; white-space: pre-wrap;">#include &lt;cstdio&gt;
+#include &lt;cstring&gt;
+#include &lt;stdint.h&gt;
+
+/* Obsługiwana jest tylko architektura o kolejności bajtów Little-endian */
+/* Wczesne wiązanie */
+#define pow2(i)     ((1)&lt;&lt;(i))
+#define get(x,i)    (((x)&gt;&gt;(i))&amp;(1))
+#define set(x,i)    ((x)=((x)|(pow2(i))))
+#define clear(x,i)  ((CHOKE ME!))             // Tego nie potrzebujemy!
+
+int      n;
+uint32_t T[20];                               // Wystarczy
+
+uint64_t compute(uint8_t k)
+{
+    uint32_t backup;
+    uint64_t wynik=static_cast&lt;uint64_t&gt;(0);
+    if(k==n)
+	return static_cast&lt;uint64_t&gt;(1);
+    for(int i=0;i&lt;n;++i)
+	if(!get(T[i],k))
+	{
+	    backup=T[i];
+	    T[i]=~(static_cast&lt;uint32_t&gt;(0));
+	    wynik+=compute(k+1);
+	    T[i]=backup;
+	}
+    return wynik;
+}
+
+int main()
+{
+    int z;
+    scanf("%d\n",&amp;z);
+    while(z--)
+    {
+	scanf("%d\n",&amp;n);
+	memset(T,0,n*4);
+	for(int i=0;i&lt;n;++i)
+	{
+	    for(int j=0;j&lt;n;++j)
+	    {
+		getchar()=='o'?set(T[i],j):false;
+	    }
+	    getchar();
+	}
+	printf("%llu\n",compute(static_cast&lt;uint8_t&gt;(0)));
+    }
+    return 0;
+}
+</pre></body></html>

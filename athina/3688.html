@@ -1,0 +1,65 @@
+<html><body><pre style="word-wrap: break-word; white-space: pre-wrap;">#include &lt;cstdio&gt;
+#include &lt;algorithm&gt;
+
+using namespace std;
+
+uint32_t		n;
+uint32_t		wynik=0;
+pair&lt;int,int&gt;	*vertex;
+int				*D;
+
+const int		inf=2000000000;
+
+int main()
+{
+	uint32_t	z;
+	scanf("%u",&amp;z);
+	while(z--)
+	{
+		uint32_t	n;
+		int			x;
+		int			y;
+		
+		scanf("%u",&amp;n);
+		
+		vertex=new pair&lt;int,int&gt;[n];
+		
+		for(uint32_t i=0;i&lt;n;++i)
+		{
+			scanf("%d%d",&amp;x,&amp;y);
+			vertex[i].first=x+y;
+			vertex[i].second=y-x;
+		}
+		
+		sort(vertex,vertex+n);
+		
+		D=new int[n];
+		
+		for(uint32_t i=0;i&lt;n;++i)
+		{
+			D[i]=inf;
+		}
+		
+		for(int i=n-1;i&gt;=0;--i)
+		{
+			uint32_t	p=lower_bound(D,D+wynik,vertex[i].second)-D;
+			D[p]=vertex[i].second;
+			
+			if(p==wynik)
+				++wynik;
+		}
+		
+		/*for(uint32_t i=0;i&lt;n;++i)
+			printf("%d ",D[i]);
+		putchar('\n');*/
+		
+		printf("%u\n",wynik);
+		
+		delete [] D;
+		delete [] vertex;
+		
+		wynik=0;
+	}
+	return 0;
+}
+</pre></body></html>

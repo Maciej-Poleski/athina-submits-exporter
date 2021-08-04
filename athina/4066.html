@@ -1,0 +1,83 @@
+<html><body><pre style="word-wrap: break-word; white-space: pre-wrap;">#include &lt;cstdio&gt;
+#include &lt;stack&gt;
+
+using namespace std;
+
+stack&lt;int&gt;  stos;
+
+inline bool tle(char a,char b)
+{
+    if(b=='*' || b=='/')
+        return true;
+    if(a=='+' || a=='-')
+        return true;
+    return false;
+}
+
+inline void rpn()
+{
+    int     c;
+    while(c=getchar())
+    {
+        switch(c)
+        {
+            case '*':
+            case '/':
+            case '+':
+            case '-':
+                while(!stos.empty() &amp;&amp; stos.top()!='(' &amp;&amp; tle(c,stos.top()))
+                {
+                    putchar(stos.top());
+                    stos.pop();
+                }
+                stos.push(c);
+                break;
+
+            case '(':
+                stos.push(c);
+                break;
+
+            case ')':
+                while(!stos.empty() &amp;&amp; stos.top()!='(')
+                {
+                    putchar(stos.top());
+                    stos.pop();
+                }
+                stos.pop();
+                break;
+
+            case '\n':
+            case ' ':
+                break;
+
+            default:
+                putchar(c);
+                break;
+        }
+        if(c==EOF || c=='\n')
+        {
+            while(!stos.empty())
+            {
+                putchar(stos.top());
+                stos.pop();
+            }
+            return;
+        }
+    }
+}
+
+int main()
+{
+    int     z;
+    scanf("%d",&amp;z);
+    getchar();
+    while(z--)
+    {
+        //while(!stos.empty())
+          //  stos.pop();
+        rpn();
+        putchar('\n');
+    }
+    return 0;
+}
+</pre></body></html>

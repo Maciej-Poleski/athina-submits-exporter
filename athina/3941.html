@@ -1,0 +1,152 @@
+<html><body><pre style="word-wrap: break-word; white-space: pre-wrap;">#include &lt;cstdio&gt;
+#include &lt;vector&gt;
+
+using namespace std;
+
+const int   inf=1050000000;
+
+inline int mpow2(int x)
+{
+    int wynik=1;
+    while(wynik&lt;x)
+        wynik*=2;
+    return wynik;
+}
+
+struct edge
+{
+    int     D;
+    int     w;
+    int     T;
+    int     a;
+    int     l;
+    
+    edge(int DD,int ww,int TT,int aa,int ll) : D(DD),w(ww),T(TT),a(aa),l(ll) {}
+};
+
+struct vertex
+{
+    vector&lt;edge&gt;    L;
+};
+
+vertex  *graf;
+int     *drzewo;
+int     size;
+int     *wagi;
+int		n;
+int		m;
+
+void rebuild(int x)
+{
+    x=(x+size-1)/2;
+    while(x)
+    {
+        drzewo[x]=(wagi[drzewo[x&lt;&lt;1]]&lt;wagi[drzewo[(x&lt;&lt;1)+1]]?drzewo[x&lt;&lt;1]:drzewo[(x&lt;&lt;1)+1]);
+        //printf("Zaaktualizowano: %d=%d\n",drzewo[x],wagi[drzewo[x]]);
+        x/=2;
+    }
+}
+
+int main()
+{
+	int		z;
+    int     S,D,w,T,a,l;
+	scanf("%d",&amp;z);
+	while(z--)
+	{
+        scanf("%d%d",&amp;n,&amp;m);
+        graf=new vertex[n+1];
+
+        for(int i=0;i&lt;m;++i)
+        {
+            scanf("%d%d%d%d%d%d",&amp;S,&amp;D,&amp;w,&amp;T,&amp;a,&amp;l);
+            graf[S].L.push_back(edge(D,w,T,a,l));
+        }
+
+        wagi=new int[n+1];
+        drzewo=new int[(size=mpow2(n))*2];
+
+        for(int i=0;i&lt;=n;++i)
+            wagi[i]=inf;
+
+        for(int i=1;i&lt;size;++i)
+            drzewo[i]=0;
+
+        for(int i=0;i&lt;n;++i)
+            drzewo[i+size]=i+1;
+
+        for(int i=n;i&lt;size;++i)
+            drzewo[i+size]=0;
+
+        wagi[1]=0;
+        
+        //for(int i=size-1;i&gt;0;--i)
+            rebuild(1);
+        
+        while(wagi[drzewo[1]]!=inf)
+        {
+            int v=drzewo[1];
+            int r=wagi[v];
+
+            drzewo[v+size-1]=0;
+            rebuild(v);
+
+            /*printf("   ");
+            for(int i=1;i&lt;size*2;++i)
+                printf("%d ",drzewo[i]);
+            putchar('\n');*/
+
+//          if(r==inf)                      // Najbliższy wierzchołek jest nieskończenie daleko - relaksacja jest niemożliwa
+//              throw 2;                    // Nigdy nie powinno się wydarzyć
+
+            for(vector&lt;edge&gt;::iterator i=graf[v].L.begin(),e=graf[v].L.end();i!=e;++i)
+            {
+                int x;
+                
+                if(i-&gt;T==0 || ((x=((r+i-&gt;T-i-&gt;a)%i-&gt;T))&lt;i-&gt;l &amp;&amp; r&gt;=i-&gt;a))
+                {
+                    if(wagi[i-&gt;D]&gt;r+i-&gt;w)
+                    {
+                        wagi[i-&gt;D]=r+i-&gt;w;
+                        rebuild(i-&gt;D);
+                        //printf("%d: ",i-&gt;D);
+                        //for(int i=1;i&lt;size*2;++i)
+                            //printf("%d ",drzewo[i]);
+                        //putchar('\n');
+                    }
+                }
+                else if(r&lt;i-&gt;a)
+                {
+                    if(wagi[i-&gt;D]&gt;i-&gt;a+i-&gt;w)
+                    {
+                        wagi[i-&gt;D]=i-&gt;a+i-&gt;w;
+                        rebuild(i-&gt;D);
+                    }
+                }
+                else
+                {
+                    if(wagi[i-&gt;D]&gt;r+i-&gt;w+i-&gt;T-x)
+                    {
+                        wagi[i-&gt;D]=r+i-&gt;w+i-&gt;T-x;
+                        rebuild(i-&gt;D);
+                        //printf("2: ");
+                        //for(int i=1;i&lt;size*2;++i)
+                            //printf("%d ",drzewo[i]);
+                        //putchar('\n');
+                    }
+                }
+            }
+        }
+        
+        if(wagi[n]==inf)
+            puts("NIE");
+        else
+            printf("%d\n",wagi[n]);
+
+        delete [] drzewo;
+        delete [] wagi;
+        delete [] graf;
+    }
+	return 0;
+}
+</pre></body></html>

@@ -1,0 +1,130 @@
+<html><body><pre style="word-wrap: break-word; white-space: pre-wrap;">#include &lt;cstdio&gt;
+
+unsigned int k,m;
+
+struct matrix
+{
+    unsigned int width,height;
+    unsigned int tab[80][80];
+
+    void clear()
+    {
+        for(unsigned int i=0;i&lt;80;++i)
+            for(unsigned int j=0;j&lt;80;++j)
+                tab[i][j]=0;
+    }
+
+    void operator=(const matrix &amp; co)
+    {
+        width=co.width;
+        height=co.height;
+        for(unsigned int i=0;i&lt;80;++i)
+            for(unsigned int j=0;j&lt;80;++j)
+                tab[i][j]=co.tab[i][j];
+
+    }
+
+    void set()
+    {
+        for(unsigned int i=0;i&lt;80;++i)
+            for(unsigned int j=0;j&lt;80;++j)
+                tab[i][j]=(i==j?1:0);
+    }
+}base_matrix,ext;
+
+matrix * iloczyn(matrix *l,matrix *p)
+{
+    matrix *wynik=new matrix;
+    wynik-&gt;width=p-&gt;width;
+    wynik-&gt;height=l-&gt;height;
+
+    for(unsigned int i=0;i&lt;l-&gt;height;++i)
+    {
+        for(unsigned int j=0;j&lt;p-&gt;width;++j)
+        {
+            wynik-&gt;tab[i][j]=0;
+            for(unsigned int q=0;q&lt;l-&gt;width;++q)
+            {
+                wynik-&gt;tab[i][j]+=((l-&gt;tab[i][q])%1000)*((p-&gt;tab[q][j])%1000);
+                wynik-&gt;tab[i][j]%=1000;
+            }
+        }
+    }
+
+    return wynik;
+}
+
+matrix * pow(matrix *l,unsigned int p)
+{
+    matrix *wynik=new matrix;
+    wynik-&gt;set();
+    wynik-&gt;width=l-&gt;width;
+    wynik-&gt;height=l-&gt;height;
+    matrix *tmp=new matrix;
+    *tmp=*l;
+    matrix *tm2;
+    while(p)
+    {
+        if(p&amp;1)
+        {
+            tm2=wynik;
+            wynik=iloczyn(wynik,tmp);
+            delete tm2;
+        }
+        p&gt;&gt;=1;
+
+        tm2=tmp;
+        tmp=iloczyn(tmp,tmp);
+        delete tm2;
+    }
+    return wynik;
+}
+
+void print(unsigned int l)
+{
+    printf("%u%u%u\n",l/100,(l%100)/10,l%10);
+}
+
+int main()
+{
+    unsigned int z;
+    scanf("%u",&amp;z);
+    while(z--)
+    {
+        scanf("%u%u",&amp;k,&amp;m);
+
+        for(unsigned int i=0;i&lt;k;++i)
+            scanf("%u",&amp;base_matrix.tab[0][i]);
+
+        base_matrix.width=base_matrix.height=k;
+
+        for(unsigned int i=1;i&lt;k;++i)
+        {
+            for(unsigned int j=0;j&lt;k;++j)
+            {
+                base_matrix.tab[i][j]=(i-1==j?1:0);
+            }
+        }
+
+        for(unsigned int i=0;i&lt;k;++i)
+            scanf("%u",&amp;ext.tab[i][0]);
+
+        if(m&lt;=k)
+        {
+            print(ext.tab[k-m][0]);
+            continue;
+        }
+
+        ext.width=1;
+        ext.height=k;
+
+        matrix *wsk=pow(&amp;base_matrix,m-k);
+        matrix *wynik=iloczyn(wsk,&amp;ext);
+
+        print(wynik-&gt;tab[0][0]);
+
+    }
+    return 0;
+}
+
+</pre></body></html>

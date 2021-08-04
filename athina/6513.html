@@ -1,0 +1,152 @@
+<html><body><pre style="word-wrap: break-word; white-space: pre-wrap;">#include &lt;cstdio&gt;
+#include &lt;utility&gt;
+#include &lt;algorithm&gt;
+
+#define REP(n,i) for(int i=0;i&lt;n;++i)
+
+using namespace std;
+
+template&lt;class T&gt;
+class Point
+{
+public:
+    T x,y;
+
+    Point() : x(T()),y(T()) {}
+    Point(const T xx,const T yy) : x(xx),y(yy) {}
+
+    bool operator&lt;(const Point &amp;o) const
+    {
+	return x&lt;o.x || (x==o.x &amp;&amp; y&lt;o.y);
+    }
+};
+
+template&lt;class T,class R&gt;
+class Vector : public Point&lt;T&gt;
+{
+public:
+    Vector() : Point&lt;T&gt;() {}
+    Vector(const T xx,const T yy) : Point&lt;T&gt;(xx,yy) {}
+    Vector(const Point&lt;T&gt; &amp;o) : Point&lt;T&gt;(o) {}
+
+    Vector operator-(const Vector &amp;o) const
+    {
+	return Vector(this-&gt;x-o.x,this-&gt;y-o.y);
+    }
+
+    Vector operator+(const Vector &amp;o) const
+    {
+	return Vector(this-&gt;x+o.x,this-&gt;y+o.y);
+    }
+
+    R operator*(const Vector &amp;o) const
+    {
+	return this-&gt;x*static_cast&lt;R&gt;(o.y)-this-&gt;y*static_cast&lt;R&gt;(o.x);
+    }
+};
+
+template&lt;class T&gt;
+class Stack
+{
+    T *mem;
+    int s,h;
+    T *ptr;
+    public:
+	Stack(int size) : s(size),h(0)
+	{
+	    mem=ptr=new T[size];
+	}
+
+	T &amp; top()
+	{
+	    if(size()&gt;0)
+	    	return *(ptr-1);
+	}
+
+	T &amp; pop()
+	{
+	    if(size()&gt;0)
+	    {
+		--h;
+	    	return *--ptr;
+	    }
+	}
+
+	void push(T o)
+	{
+	    ++h;
+	    *(ptr++)=o;
+	}
+
+	int size()
+	{
+	    return h;
+	}
+
+	bool empty()
+	{
+	    return size()==0;
+	}
+
+	T &amp; operator[](int n)
+	{
+	    return *(ptr-n);
+	}
+
+	~Stack()
+	{
+	    delete [] mem;
+	}
+};
+
+typedef Vector&lt;int,long long&gt; V;
+
+int main()
+{
+    int z;
+    scanf("%d",&amp;z);
+    while(z--)
+    {
+	int n;
+	scanf("%d",&amp;n);
+	Point&lt;int&gt; I[n];
+	REP(n,i) scanf("%d%d",&amp;I[i].x,&amp;I[i].y);
+	sort(I,I+n);
+
+	Stack&lt;Point&lt;int&gt; &gt; S(n+5);
+
+	REP(n,i)
+	{
+	    while(S.size()&gt;1 &amp;&amp; ((V(S[1])-V(S[2]))*(V(I[i])-V(S[1])))&lt;=0)
+		S.pop();
+	    S.push(I[i]);
+	    //for(int i=S.size();i&gt;0;--i) printf("%d %d\n",S[i].x,S[i].y);
+	    //printf("\n");
+	}
+
+	Stack&lt;Point&lt;int&gt; &gt; D(n+5);
+
+	for(int i=n-1;i&gt;=0;--i)
+	{
+	    while(D.size()&gt;1 &amp;&amp; ((V(D[1])-V(D[2]))*(V(I[i])-V(D[1])))&lt;=0)
+		D.pop();
+	    D.push(I[i]);
+	    //for(int i=D.size();i&gt;0;--i) printf("%d %d\n",D[i].x,D[i].y);
+	    //printf("\n");
+	}
+	printf("%d\n",S.size()+D.size()-2);
+	D.pop();
+	while(!S.empty())
+	{
+	    printf("%d %d\n",S.top().x,S.top().y);
+	    S.pop();
+	}
+	while(D.size()&gt;1)
+	{
+	    printf("%d %d\n",D.top().x,D.top().y);
+	    D.pop();
+	}
+    }
+    return 0;
+}
+</pre></body></html>

@@ -1,0 +1,367 @@
+<html><body><pre style="word-wrap: break-word; white-space: pre-wrap;">#include &lt;cstdio&gt;
+#include &lt;algorithm&gt;
+using namespace std;
+
+#define pion 1
+#define poziomB 0
+#define poziomE 2
+
+inline unsigned int mpow2(unsigned int n)
+{
+	unsigned int wynik=1;
+	while(wynik&lt;n)
+		wynik&lt;&lt;=1;
+	return wynik;
+}
+
+struct kartez
+{
+	int x,y;
+    
+	bool operator&lt;(const kartez &amp;o) const
+	{
+		if(x&lt;o.x)
+			return true;
+		return false;
+	}
+    
+	bool operator==(const kartez &amp;o) const
+	{
+		if(x==o.x)
+			return true;
+		return false;
+	}
+};
+
+class sumTree
+{
+	unsigned int *tab;
+	unsigned int size,tabSize;
+    
+	void add1(unsigned int n)
+	{
+		while(n)
+		{
+			++tab[n];
+			n=(n-1)&gt;&gt;1;
+		}
+		++tab[0];
+	}
+	
+	void sub1(unsigned int n)
+	{
+		while(n)
+		{
+			--tab[n];
+			--n&gt;&gt;=1;
+		}
+		--tab[0];
+	}
+    
+	unsigned int add(unsigned int begin,unsigned int end)
+	{
+		unsigned int l=tab[begin],p=tab[end];
+		while(begin+1!=end)
+		{
+			if(begin&amp;1)
+			{
+				l+=tab[begin+1];
+				begin&gt;&gt;=1;
+			}
+			else
+			{
+				begin=(begin-1)&gt;&gt;1;
+			}
+			if(end&amp;1)
+			{
+				end&gt;&gt;=1;
+			}
+			else
+			{
+				p+=tab[end-1];
+				end=(end-1)&gt;&gt;1;
+			}
+		}
+		return l+p;
+	}
+    
+	public:
+    
+		sumTree(unsigned int n) : size(mpow2(n)),tabSize(2*size-1)
+		{
+			tab=new unsigned int [tabSize];
+			for(unsigned int *wsk=tab,*end=tab+tabSize;wsk!=end;++wsk)
+				*wsk=0;
+		}
+    
+		~sumTree()
+		{
+			delete [] tab;
+		}
+    
+		void inc(unsigned int n)
+		{
+			add1(size+n-1);
+		}
+		
+		void dec(unsigned int n)
+		{
+			sub1(size+n-1);
+		}
+    
+		unsigned int suma(int begin,int end)
+		{
+			if(begin==end)
+				return tab[size+begin-1];
+			if(begin&gt;end)
+				return 0;
+			return add(size+begin-1,size+end-1);
+		}
+};
+
+class segTree
+{
+    unsigned int *tab;
+	unsigned int size,tabSize;
+	
+	void add(unsigned int a,unsigned int b)
+	{
+		while(a!=b)
+		{
+			//printf(" %u %u\n",a,b);
+			unsigned int sub=b-a,n=a,i=1;
+			for(;i&lt;&lt;1&lt;=sub &amp;&amp; n&amp;1;i&lt;&lt;=1,--n&gt;&gt;=1);
+			a+=i;
+			++tab[n];
+		}
+	}
+	
+	unsigned int segSum(unsigned int n)
+	{
+		unsigned int wynik=0;
+		while(n)
+		{
+			wynik+=tab[n];
+			--n&gt;&gt;=1;
+		}
+		wynik+=tab[0];
+		return wynik;
+	}
+	
+	public:
+	
+	segTree(unsigned int n) : size(mpow2(n)),tabSize(2*size-1)
+	{
+		tab=new unsigned int [tabSize];
+		for(unsigned int *wsk=tab,*end=tab+tabSize;wsk!=end;++wsk)
+			*wsk=0;
+	}
+	
+	~segTree()
+	{
+		delete [] tab;
+	}
+	
+	void addSeg(int a,int b)
+	{
+		add(a+size-1,b+size);
+	}
+	
+	unsigned int suma(int a)
+	{
+		return segSum(a+size-1);
+	}
+};
+
+unsigned *wynik;
+int *y;
+int sizeY;
+
+struct event
+{
+	int
+					x,
+					y,
+					t;
+	unsigned int
+					n:30,
+					o:2;
+	
+	bool operator&lt;(const event &amp;c) const
+	{
+		if(x&lt;c.x or (x==c.x and o&lt;c.o))
+			return true;
+		return false;
+	}
+};
+
+int main()
+{
+	#ifdef segTree_test
+	segTree drzewo(14);
+	for(unsigned int i=0;i&lt;drzewo.tabSize;++i)
+		printf("%2u ",i);
+	putchar('\n');
+	for(unsigned int i=0;i&lt;drzewo.tabSize;++i)
+		printf("%2u ",drzewo.tab[i]);
+	putchar('\n');
+	drzewo.addSeg(0,2);
+	for(unsigned int i=0;i&lt;drzewo.tabSize;++i)
+		printf("%2u ",i);
+	putchar('\n');
+	for(unsigned int i=0;i&lt;drzewo.tabSize;++i)
+		printf("%2u ",drzewo.tab[i]);
+	putchar('\n');
+	drzewo.addSeg(4,8);
+	for(unsigned int i=0;i&lt;drzewo.tabSize;++i)
+		printf("%2u ",i);
+	putchar('\n');
+	for(unsigned int i=0;i&lt;drzewo.tabSize;++i)
+		printf("%2u ",drzewo.tab[i]);
+	putchar('\n');
+	drzewo.addSeg(7,10);
+	for(unsigned int i=0;i&lt;drzewo.tabSize;++i)
+		printf("%2u ",i);
+	putchar('\n');
+	for(unsigned int i=0;i&lt;drzewo.tabSize;++i)
+		printf("%2u ",drzewo.tab[i]);
+	putchar('\n');
+	drzewo.addSeg(14,15);
+	for(unsigned int i=0;i&lt;drzewo.tabSize;++i)
+		printf("%2u ",i);
+	putchar('\n');
+	for(unsigned int i=0;i&lt;drzewo.tabSize;++i)
+		printf("%2u ",drzewo.tab[i]);
+	putchar('\n');
+	drzewo.addSeg(0,15);
+	for(unsigned int i=0;i&lt;drzewo.tabSize;++i)
+		printf("%2u ",i);
+	putchar('\n');
+	for(unsigned int i=0;i&lt;drzewo.tabSize;++i)
+		printf("%2u ",drzewo.tab[i]);
+	putchar('\n');
+	printf("%u %u %u %u %u\n",drzewo.suma(1),drzewo.suma(3),drzewo.suma(7),drzewo.suma(8),drzewo.suma(11));
+	#endif
+	unsigned int z;
+	scanf("%u",&amp;z);
+	while(z--)
+	{
+		unsigned int n;
+		scanf("%u",&amp;n);
+		event obiekty[2*n];
+		event *begin=obiekty,*end=obiekty;
+		wynik=new unsigned [n];
+		y=new int[2*n];
+		int *yE=y;
+		for(unsigned i=0;i&lt;n;++i,++end,++yE)
+		{
+			int x1,x2,y1,y2;
+			scanf("%d%d%d%d",&amp;x1,&amp;y1,&amp;x2,&amp;y2);
+			if(x2&lt;x1)
+				swap(x1,x2);
+			if(y2&lt;y1)
+				swap(y1,y2);
+			if(x1==x2)
+			{
+				end-&gt;x=x1;
+				end-&gt;n=i;
+				end-&gt;y=y1;
+				end-&gt;t=y2;
+				end-&gt;o=pion;
+				*yE++=y1;
+				*yE=y2;
+			}
+			else
+			{
+				end-&gt;n=i;
+				end-&gt;x=x1;
+				end-&gt;y=y1;
+				end-&gt;t=y1;
+				end-&gt;o=poziomB;
+				*yE=y1;
+				++end;
+				end-&gt;n=i;
+				end-&gt;x=x2;
+				end-&gt;y=y2;
+				end-&gt;t=y2;
+				end-&gt;o=poziomE;
+			}
+		}
+		sort(obiekty,end);
+		#ifdef sort_debug
+		for(event *begin=obiekty;begin!=end;++begin)
+		{
+			if(begin-&gt;t==begin-&gt;y)
+			{
+				printf("Znalazlem poziom x: %d, y: %d, nr: %u\n",begin-&gt;x,begin-&gt;y,begin-&gt;n);
+			}
+			else
+			{
+				printf("Znalazlem pion x: %d y1: %d y2: %d nr: %u\n",begin-&gt;x,begin-&gt;y,begin-&gt;t,begin-&gt;n);
+			}
+		}
+		#endif
+		
+		#ifdef obsolete_unique_copy
+		/******************** UNIQUE COPY **********************/
+		{
+			unsigned *wsk=y;
+			for(event *beg=begin+1;beg!=end;++beg)
+			{
+				if(*wsk!=beg-&gt;y)
+					*++wsk=beg-&gt;y;
+			}
+			sizeY=wsk+1-y;
+		}
+		/******************** UNIQUE COPY **********************/
+		#else
+		sort(y,yE);
+		sizeY=unique(y,yE)-y;
+		yE=y+sizeY;
+		#endif
+		#ifdef debugY
+		printf("%u\n",sizeY);
+		for(unsigned i=0;i&lt;sizeY;++i)
+			printf("%u\n",y[i]);
+		#endif
+		
+		sumTree licznik(sizeY);
+		segTree przedzial(sizeY);
+		
+		////////////////////////////////////////////////////////////////////////
+		
+		//printf("Rozmiar Y %u\n",yE-y);
+		
+		for(;begin!=end;++begin)
+		{
+			if(begin-&gt;o==poziomB)
+			{
+				//printf("Pozioma %u | x %u y %u początek poz %d suma %u\n",begin-&gt;n,begin-&gt;x,begin-&gt;y,lower_bound(y,yE,begin-&gt;y)-y,przedzial.suma(lower_bound(y,yE,begin-&gt;y)-y));
+				wynik[begin-&gt;n]=przedzial.suma(lower_bound(y,yE,begin-&gt;y)-y);
+				licznik.inc(lower_bound(y,yE,begin-&gt;y)-y);
+			}
+			else if(begin-&gt;o==poziomE)
+			{
+				//printf("Pozioma %u | x %u y %u koniec poz %d suma %u\n",begin-&gt;n,begin-&gt;x,begin-&gt;y,lower_bound(y,yE,begin-&gt;y)-y,przedzial.suma(lower_bound(y,yE,begin-&gt;y)-y));
+				wynik[begin-&gt;n]=przedzial.suma(lower_bound(y,yE,begin-&gt;y)-y)-wynik[begin-&gt;n];
+				licznik.dec(lower_bound(y,yE,begin-&gt;y)-y);
+			}
+			else
+			{
+				//printf("Pionowa %u | x %u y1 %u y2 %u poz1 %d poz2 %d suma %u\n",begin-&gt;n,begin-&gt;x,begin-&gt;y,begin-&gt;t,lower_bound(y,yE,begin-&gt;y)-y,lower_bound(y,yE,begin-&gt;t)-y,licznik.suma(lower_bound(y,yE,begin-&gt;y)-y,lower_bound(y,yE,begin-&gt;t)-y));
+				wynik[begin-&gt;n]=licznik.suma(lower_bound(y,yE,begin-&gt;y)-y,lower_bound(y,yE,begin-&gt;t)-y);
+				przedzial.addSeg(lower_bound(y,yE,begin-&gt;y)-y,lower_bound(y,yE,begin-&gt;t)-y);
+			}
+		}
+		
+		////////////////////////////////////////////////////////////////////////
+		
+		for(unsigned *wsk=wynik,*end=wynik+n;wsk!=end;++wsk)
+			printf("%u\n",*wsk);
+		
+		delete [] y;
+		delete [] wynik;
+	}
+	return 0;
+}
+</pre></body></html>

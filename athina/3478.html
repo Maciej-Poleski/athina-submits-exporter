@@ -1,0 +1,196 @@
+<html><body><pre style="word-wrap: break-word; white-space: pre-wrap;">#include &lt;cstdio&gt;
+#include &lt;vector&gt;
+#include &lt;stdint.h&gt;
+
+using namespace std;
+
+struct edge
+{
+	uint32_t	d;
+	uint32_t	v;
+	
+	edge(uint32_t dd,uint32_t vv) : d(dd),v(vv) {}
+};
+
+bool			*v2;
+vector&lt;edge&gt;	*graf;
+uint32_t		*wynik;
+uint32_t		*w;
+uint32_t		suma;
+uint32_t		n;
+uint32_t		m;
+
+void buduj()
+{
+	for(uint32_t i=1;i&lt;=n;++i)
+	{
+		if(graf[i].size()&amp;1)
+		{
+			graf[0].push_back(edge(i,m+suma));
+			graf[i].push_back(edge(0,m+suma));
+			++suma;
+		}
+	}
+}
+
+/*void iteruj()
+{
+	wynik=new uint32_t[m+2];
+	uint32_t				*w=wynik+1;
+	uint32_t				n=0;
+	vector&lt;edge&gt;::iterator	i,e;
+	while(true)
+	{
+		for(i=graf[n].begin(),e=graf[n].end();i!=e &amp;&amp; (*(i-&gt;v));++i);
+	
+		if(i==e)
+		{
+			/*printf("%u",w-wynik);
+			for(uint32_t *wsk=wynik+1;wsk&lt;w;++wsk)
+				printf(" %u",*wsk);
+			putchar('\n');
+			w=wynik;
+			puts("KONIEC");*//*
+			break;
+		}
+		if(i-&gt;d==0)
+		{
+			printf("%u",w-wynik-1);
+			for(uint32_t *wsk=wynik+1;wsk&lt;w;++wsk)
+				printf(" %u",*wsk);
+			putchar('\n');
+			w=wynik;
+		}
+	
+		*(w++)=i-&gt;d;
+		*(i-&gt;v)=true;
+		n=i-&gt;d;
+	}
+	delete [] wynik;
+}
+
+void onlyOneEuler()
+{
+	wynik=new uint32_t[m+1];
+	uint32_t				*w=wynik;
+	uint32_t				n=1;
+	vector&lt;edge&gt;::iterator	i,e;
+	while(true)
+	{
+		for(i=graf[n].begin(),e=graf[n].end();i!=e &amp;&amp; (*(i-&gt;v));++i);
+	
+		if(i==e)
+		{
+			printf("%u",w-wynik);
+			for(uint32_t *wsk=wynik;wsk&lt;w;++wsk)
+				printf(" %u",*wsk);
+			printf(" %u",*wynik);
+			putchar('\n');
+			w=wynik;
+			break;
+		}
+		/*if(i-&gt;d==0)
+		{
+			printf("%u",w-wynik-1);
+			for(uint32_t *wsk=wynik+1;wsk&lt;w;++wsk)
+				printf(" %u",*wsk);
+			putchar('\n');
+			w=wynik;
+		}*//*
+	
+		*(w++)=n;
+		*(i-&gt;v)=true;
+		n=i-&gt;d;
+	}
+	delete [] wynik;
+}*/
+
+void dfs(uint32_t n=0)
+{
+	for(vector&lt;edge&gt;::iterator i=graf[n].begin(),e=graf[n].end();i!=e;++i)
+	{
+		if(!(v2[i-&gt;v]))
+		{
+			v2[i-&gt;v]=true;
+			dfs(i-&gt;d);
+			*(w++)=n;
+		}
+	}
+}
+
+int main()
+{
+	uint32_t	z;
+	uint32_t	a;
+	uint32_t	b;
+	scanf("%u",&amp;z);
+	while(z--)
+	{
+		scanf("%u%u",&amp;n,&amp;m);
+		
+		graf=new vector&lt;edge&gt;[n+1];
+		
+		for(uint32_t i=0;i&lt;m;++i)
+		{
+			scanf("%u%u",&amp;a,&amp;b);
+			graf[a].push_back(edge(b,i));
+			graf[b].push_back(edge(a,i));
+		}
+		
+		buduj();
+		
+		v2=new bool[m+suma];
+		
+		for(uint32_t i=0,e=m+suma;i&lt;e;++i)
+			v2[i]=false;
+		
+		w=wynik=new uint32_t[m+suma+2];
+		
+		if(suma!=0)
+		{
+			printf("%u\n",suma&gt;&gt;1);
+			dfs(0);
+			uint32_t	*old=wynik;
+			for(uint32_t *wsk=wynik;wsk&lt;w;++wsk)
+			{
+				if(*wsk!=0)
+					continue;
+				
+				printf("%u",wsk-old);
+				
+				for(;old&lt;wsk;++old)
+					printf(" %u",*old);
+				putchar('\n');
+				
+				old=wsk+1;
+			}
+		}
+		else
+		{
+			printf("1\n");
+			dfs(1);
+			printf("%u",w-wynik+1);
+			
+			for(uint32_t *wsk=wynik;wsk&lt;w;++wsk)
+			{
+				printf(" %u",*wsk);
+			}
+			printf(" %u\n",*wynik);
+		}
+		
+		delete [] wynik;
+			
+		delete [] graf;
+		delete [] v2;
+		
+		/*printf("%u\n",suma);
+		for(vector&lt;edge&gt;::iterator i=graf[0].begin(),e=graf[0].end();i!=e;++i)
+			printf("%u ",i-&gt;d);
+		putchar('\n');*/
+		
+		
+		suma=0;
+	}
+	return 0;
+}
+</pre></body></html>

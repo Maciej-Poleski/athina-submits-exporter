@@ -1,0 +1,91 @@
+<html><body><pre style="word-wrap: break-word; white-space: pre-wrap;">#include &lt;cstdio&gt;
+#include &lt;cstring&gt;
+#include &lt;stdint.h&gt;
+
+/* Obsługiwana jest tylko architektura o kolejności bajtów Little-endian */
+/* Wczesne wiązanie */
+#define pow2(i)     ((1)&lt;&lt;(i))
+#define get(x,i)    (((x)&gt;&gt;((i)-(1)))&amp;(1))
+#define set(x,i)    ((x)=((x)|(pow2((i)-(1)))))
+#define clear(x,i)  ((x)=((x)&amp;(~(pow2((i)-(1))))))
+
+#ifdef ENABLE_OBSOLETE_CODE
+int      n;
+uint32_t T[20];                               // Wystarczy
+
+uint64_t compute(uint8_t k)
+{
+    uint32_t backup;
+    uint64_t wynik=static_cast&lt;uint64_t&gt;(0);
+    if(k==n)
+	return static_cast&lt;uint64_t&gt;(1);
+    for(int i=0;i&lt;n;++i)
+	if(!get(T[i],k))
+	{
+	    backup=T[i];
+	    T[i]=~(static_cast&lt;uint32_t&gt;(0));
+	    wynik+=compute(k+1);
+	    T[i]=backup;
+	}
+    return wynik;
+}
+#else
+int        n;
+uint64_t   T[1&lt;&lt;21];
+bool       A[21][21];
+
+int bitcount(uint32_t x)
+{
+    int w=0;
+    for(int i=1;i&lt;=30;++i)
+	w+=get(x,i);
+    return w;
+}
+
+#endif
+
+int main()
+{
+    int z;
+    scanf("%d\n",&amp;z);
+    while(z--)
+    {
+	scanf("%d\n",&amp;n);
+#ifdef USE_OBSOLETE_CODE
+	memset(T,0,n*4);
+	for(int i=0;i&lt;n;++i)
+	{
+	    for(int j=0;j&lt;n;++j)
+	    {
+		getchar()=='o'?set(T[i],j):false;
+	    }
+	    getchar();
+	}
+	printf("%llu\n",compute(static_cast&lt;uint8_t&gt;(0)));
+#else
+	for(int i=1;i&lt;=n;++i)
+	{
+	    for(int j=1;j&lt;=n;++j)
+	    {
+		A[i][j]=((getchar()=='.')?true:false);
+	    }
+	    getchar();
+	}
+	T[0]=1;
+	for(uint32_t S=1;S&lt;=(1&lt;&lt;n);++S)
+	{
+	    T[S]=0;
+	    for(int k=1;k&lt;=25;++k)
+	    {
+		if(get(S,k))
+		{
+		    T[S]+=A[bitcount(S)][k]*T[S&amp;(~(1&lt;&lt;(k-1)))];
+		}
+	    }
+	}
+	printf("%llu\n",T[(1&lt;&lt;n)-1]);
+#endif
+    }
+    return 0;
+}
+</pre></body></html>

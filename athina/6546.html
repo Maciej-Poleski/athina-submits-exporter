@@ -1,0 +1,187 @@
+<html><body><pre style="word-wrap: break-word; white-space: pre-wrap;">#include &lt;cstdio&gt;
+#include &lt;algorithm&gt;
+#include &lt;vector&gt;
+#include &lt;cstring&gt;
+#include &lt;queue&gt;
+
+using namespace std;
+
+struct edge
+{
+    unsigned short destination;
+    unsigned long numer;
+    edge * incydence;
+    unsigned long c;
+    signed long f;
+
+    edge() {}
+    edge(unsigned short D,unsigned int C=0,unsigned int N=0) : destination(D),numer(N),incydence(0),c(C),f(0) {}
+
+    unsigned long cf()
+    {
+	return c-f;
+    }
+};
+
+struct vertex
+{
+    vector&lt;edge*&gt; adjacency;
+    unsigned long tmp_max;	// Maksymalny przepływ do tego wierzchołka
+    edge *back;			// Krawędź powrotna
+};
+
+vertex *G;
+bool *V;
+bool *V2;
+int n,m;
+
+#ifdef USE_OPTIMIZED_METHOD
+bool cmp(edge*a,edge*b)
+{
+    return a-&gt;destination&lt;b-&gt;destination;
+}
+#endif
+
+void dfs(int v)
+{
+    V[v]=true;
+    for(vector&lt;edge*&gt;::iterator i=G[v].adjacency.begin(),e=G[v].adjacency.end();i!=e;++i)
+	if((*i)-&gt;cf()&gt;0 &amp;&amp; V[(*i)-&gt;destination]==false) dfs((*i)-&gt;destination);
+}
+vector&lt;int&gt; *ANS;
+
+void prepare_ans(int v)
+{
+    if(V2[v]) return;
+    V2[v]=true;
+    for(vector&lt;edge*&gt;::iterator i=G[v].adjacency.begin(),e=G[v].adjacency.end();i!=e;++i)
+    {
+	if((*i)-&gt;c==0) continue;
+	if(!V[(*i)-&gt;destination]) (*ANS).push_back((*i)-&gt;numer);
+	else prepare_ans((*i)-&gt;destination);
+    }
+}
+
+void garbarge_collector()
+{
+    for(int v=1;v&lt;=n;++v) for(vector&lt;edge*&gt;::iterator i=G[v].adjacency.begin(),e=G[v].adjacency.end();i!=e;++i) delete (*i);
+}
+
+int main()
+{
+    int z;
+    scanf("%d",&amp;z);
+    while(z--)
+    {
+	scanf("%d%d",&amp;n,&amp;m);
+	G=new vertex[n+1];
+	for(int i=1;i&lt;=m;++i)
+	{
+	    unsigned int a,b,x;
+	    scanf("%u%u%u",&amp;a,&amp;b,&amp;x);
+	    if(a==b) continue;
+	    G[a].adjacency.push_back(new edge(b,x,i));
+	}
+	#ifdef USE_OPTIMIZED_METHOD
+	for(int i=1;i&lt;=n;++i) sort(G[i].adjacency.begin(),G[i].adjacency.end(),cmp);
+	//for(int i=1;i&lt;=n;++i) {for(vector&lt;edge*&gt;::iterator j=G[i].adjacency.begin(),e=G[i].adjacency.end();j!=e;++j) printf("%u ",(*j)-&gt;numer); printf("\n");}
+	vector&lt;edge*&gt;::iterator it[n+1];
+	for(int i=1;i&lt;=n;++i) it[i]=G[i].adjacency.begin();
+	for(int i=1;i&lt;=n;++i)	// O(V+E*log(E))
+	{
+	    for(vector&lt;edge*&gt;::iterator it=G[i].adjacency.begin(),e=G[i].adjacency.end();it!=e;++it)
+	    {
+		int &amp;d=(*it)-&gt;destination;
+		#error This feature is not implemented yet.
+	    }
+	}
+	#else
+	for(int i=1;i&lt;=n;++i)	//O(V+E*E)
+	{
+	    for(vector&lt;edge*&gt;::iterator it=G[i].adjacency.begin(),e=G[i].adjacency.end();it!=e;++it)
+	    {
+		if((*it)-&gt;incydence)
+		    continue;
+		int d=(*it)-&gt;destination;
+		bool ok=true;
+		for(vector&lt;edge*&gt;::iterator jt=G[d].adjacency.begin(),ee=G[d].adjacency.end();jt!=ee;++jt)
+		{
+		    int dd=(*jt)-&gt;destination;
+		    if(dd==i)
+		    {
+			(*it)-&gt;incydence=(*jt);
+			(*jt)-&gt;incydence=(*it);
+			ok=false;
+			break;
+		    }
+		}
+		if(ok)
+		{
+		    edge *E=new edge(i);
+		    E-&gt;incydence=(*it);
+		    G[d].adjacency.push_back(E);
+		    (*it)-&gt;incydence=E;
+		}
+	    }
+	}
+	#endif
+	V=new bool[n+1];
+	bool found;
+	unsigned long long F=0;
+	G[1].tmp_max=0xffffffff;
+	G[1].back=0;
+	do
+	{
+	    found=false;
+	    queue&lt;int&gt; Q; Q.push(1);
+	    memset(V,0,n+1); V[1]=true;
+	    while(!Q.empty())
+	    {
+		int v=Q.front(); Q.pop();
+		if(v==n)
+		{
+		    found=true;
+		    unsigned int flood=G[v].tmp_max;
+		    F+=flood;
+		    int i=v; while(i!=1)
+		    {
+			G[i].back-&gt;f-=flood;
+			G[i].back-&gt;incydence-&gt;f+=flood;
+			i=G[i].back-&gt;destination;
+		    }
+		    break;
+		}
+		else
+		{
+		    for(vector&lt;edge*&gt;::iterator i=G[v].adjacency.begin(),e=G[v].adjacency.end();i!=e;++i)
+		    {
+			int d=(*i)-&gt;destination;
+			if(V[d] || (*i)-&gt;cf()==0) continue;
+			V[d]=true;
+			G[d].back=(*i)-&gt;incydence;
+			G[d].tmp_max=min(G[v].tmp_max,(*i)-&gt;cf());
+			Q.push(d);
+		    }
+		}
+	    }
+	} while(found);
+	printf("%lld\n",F);
+	memset(V,0,n+1);
+	dfs(1);
+	V2=new bool[n+1];
+	memset(V2,0,n+1);
+	ANS=new vector&lt;int&gt;;
+	prepare_ans(1);
+	delete [] V;
+	delete [] V2;
+	printf("%u",(*ANS).size());
+	for(vector&lt;int&gt;::iterator i=(*ANS).begin(),e=(*ANS).end();i!=e;++i)
+	    printf(" %d",*i);
+	printf("\n");
+	delete ANS;
+	garbarge_collector();
+	delete [] G;
+    }
+    return 0;
+}
+</pre></body></html>

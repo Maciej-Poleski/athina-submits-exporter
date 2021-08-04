@@ -1,0 +1,29 @@
+<html><body><pre style="word-wrap: break-word; white-space: pre-wrap;">#include &lt;cstdio&gt;
+#include &lt;algorithm&gt;
+
+using namespace std;
+
+int n,i,*tab;
+
+int main()
+{
+	scanf("%d",&amp;n);
+	while(n--)
+	{
+		scanf("%d",&amp;i);
+		tab=new int[i];
+		for(int j=0;j&lt;i;++j)
+		{
+			scanf("%d",tab+j);
+		}
+		sort(tab,tab+i);
+		for(int j=0;j&lt;i;++j)
+			printf("%d ",tab[j]);
+		puts("");
+		delete [] tab;
+	}
+
+	return 0;
+}
+
+</pre></body></html>
